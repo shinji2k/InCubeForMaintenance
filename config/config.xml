@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<root>
+	<socket>
+		<!-- server or client -->
+		<type>server</type>
+		<!-- if server, set null -->
+		<ip></ip>
+		<port>7676</port>
+	</socket>
+
+	<protocol config="config\protocol-config.xml">
+		<interval time="30000" protocol="status" />
+		<interval time="5000" protocol="alarm" />
+	</protocol>
+</root>
