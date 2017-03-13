@@ -33,17 +33,19 @@ public class SendDataFactory implements Runnable
 	private List<IntervalInfo> intervalInfoList;
 	private String proConfigPath;
 	private SocketInfo si;
+	private String configPath;
 
-	public SendDataFactory(Socket s)
+	public SendDataFactory(Socket s, String configPath)
 	{
 		this.s = s;
-		init("config\\config.xml");
+		init(configPath);
 	}
 
 	public SendDataFactory()
 	{
 		super();
 	}
+	
 
 	/**
 	 * 以Server的形式启动socket
@@ -59,6 +61,7 @@ public class SendDataFactory implements Runnable
 			return;
 		}
 		SocketServer ss = new SocketServer(Integer.parseInt(si.getPort()));
+		ss.setConfigPath(configPath);
 		ss.start();
 	}
 	
@@ -101,6 +104,7 @@ public class SendDataFactory implements Runnable
 	@SuppressWarnings("unchecked")
 	public void init(String configPath)
 	{
+		this.configPath = configPath;
 		SAXReader saxReader = new SAXReader();
 		intervalInfoList = new ArrayList<IntervalInfo>();
 		try

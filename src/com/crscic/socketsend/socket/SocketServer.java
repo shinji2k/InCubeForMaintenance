@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import com.crscic.socketsend.SendDataFactory;
+import com.crscic.socketsend.utils.StringUtils;
 
 /**
  * C/S架构的服务端对象。
@@ -21,6 +22,7 @@ public class SocketServer
 	private int port;
 	private volatile boolean running = false;
 	private Thread connWatchDog;
+	private String configPath;
 
 	public SocketServer(int port)
 	{
@@ -49,6 +51,18 @@ public class SocketServer
 	{
 		public void run()
 		{
+			if (StringUtils.isNullOrEmpty(configPath))
+			{
+				try
+				{
+					throw new Exception("没有设置配置文件路径");
+				}
+				catch (Exception e1)
+				{
+					e1.printStackTrace();
+					return;
+				}
+			}
 			ServerSocket ss = null;
 			try
 			{
@@ -57,7 +71,7 @@ public class SocketServer
 				{
 					Socket s = ss.accept();
 					// 新起一个线程去处理收到的消息
-					SendDataFactory sdf = new SendDataFactory(s);
+					SendDataFactory sdf = new SendDataFactory(s, configPath);
 					new Thread(sdf).start();
 				}
 			}
@@ -70,5 +84,15 @@ public class SocketServer
 				stop();
 			}
 		}
+	}
+
+	public String getConfigPath()
+	{
+		return configPath;
+	}
+
+	public void setConfigPath(String configPath)
+	{
+		this.configPath = configPath;
 	}
 }
