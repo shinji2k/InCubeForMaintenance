@@ -148,17 +148,13 @@ public class XmlHelper
 			return res;
 		for (PartMem mem : partMem)
 		{
+			String childTypeString = mem.getChildType();
 			byte[] b = null;
-			switch (mem.getChildType())
-			{
-				case "length":
-					b = getLengthData(mem, res);
-					break;
-				default:
-					b = getCheckData(mem, res);
-			}
+			if (childTypeString.equals("length"))
+				b = getLengthData(mem, res);
+			else if (childTypeString.equals("check"))
+				b = getCheckData(mem, res);
 			res.put(mem.getName(), CollectionUtils.byteToByte(b));
-
 		}
 		return res;
 	}
@@ -184,12 +180,8 @@ public class XmlHelper
 		}
 
 		byte[] b = null;
-		switch (mem.getChildType())
-		{
-			case "xor":
-				b = getXorData(data);
-				break;
-		}
+		if (mem.getChildType().equals("xor"))
+			b = getXorData(data);
 		return b;
 	}
 
@@ -243,34 +235,25 @@ public class XmlHelper
 		if (StringUtils.isNullOrEmpty(typeString))
 			throw AppException.nodeErr(part, "type");
 		byte[] b = null;
-		switch (typeString)
-		{
-			case "aptotic": // 固定值
-				b = getAptoticData(part);
-				break;
-			case "file": // 读取文件
-				b = getFileData(part);
-				break;
-			case "length":
-				// 先将计算长度相关参数缓存，统一最后再计算
-				setPartMem(part);
-				break;
-			case "generate":// 递归
-				b = getGenerateData(part);
-				break;
-			case "time": // 时间格式
-				b = getTimeData(part);
-				break;
-			case "random": // 随机选取
-				b = getRandomData(part);
-				break;
-			case "check": // 校验码
-				setPartMem(part);
-				break;
-			default:
-				throw AppException.nodeErr(part, "type");
-		}
+		if (typeString.equals("aptotic"))
+			b = getAptoticData(part);
+		else if (typeString.equals("file")) // 读取文件
+			b = getFileData(part);
+		else if (typeString.equals("length"))
+			// 先将计算长度相关参数缓存，统一最后再计算
+			setPartMem(part);
+		else if (typeString.equals("generate"))// 递归
+			b = getGenerateData(part);
+		else if (typeString.equals("time")) // 时间格式
+			b = getTimeData(part);
+		else if (typeString.equals("random")) // 随机选取
+			b = getRandomData(part);
+		else if (typeString.equals("check")) // 校验码
+			setPartMem(part);
+		else
+			throw AppException.nodeErr(part, "type");
 		return b;
+
 	}
 
 	/**

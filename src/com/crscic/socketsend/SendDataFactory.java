@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import org.dom4j.io.SAXReader;
 import com.crscic.socketsend.data.IntervalInfo;
 import com.crscic.socketsend.data.SocketInfo;
 import com.crscic.socketsend.exception.AppException;
+import com.crscic.socketsend.socket.SocketClient;
 import com.crscic.socketsend.socket.SocketServer;
 import com.crscic.socketsend.utils.ByteUtils;
 import com.crscic.socketsend.utils.StringUtils;
@@ -60,6 +62,35 @@ public class SendDataFactory implements Runnable
 		ss.start();
 	}
 	
+	/**
+	 * 以client启动socket并自动连接，连接后监听从server返回的消息
+	 *
+	 * @author zhaokai
+	 * @version 2017年3月13日 下午5:17:14
+	 */
+	public void startSocketClient()
+	{
+		if (si == null)
+		{
+			System.out.println("Need init() first.");
+			return;
+		}
+		
+		SocketClient sc = new SocketClient(si.getIp(), Integer.parseInt(si.getPort()));
+		try
+		{
+			sc.start();
+		}
+		catch (UnknownHostException e)
+		{
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * 根据config/config.xml进行初始化，获取socket信息及需要发送协议及发送间隔
 	 *
