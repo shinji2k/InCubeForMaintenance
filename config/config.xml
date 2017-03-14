@@ -8,7 +8,7 @@
 		<port>7676</port>
 	</socket>
 
-	<protocol config="config\protocol-config.xml">
+	<protocol config="D:\WorkSpace\Java\Eclipse\SocketSend\config\protocol-config.xml">
 		<interval time="30000" protocol="status" />
 		<interval time="5000" protocol="alarm" />
 	</protocol>

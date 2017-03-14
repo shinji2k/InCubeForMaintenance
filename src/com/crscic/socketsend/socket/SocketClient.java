@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 
 import com.crscic.socketsend.utils.ByteUtils;
 
@@ -20,14 +21,21 @@ public class SocketClient
 	private int port;
 	private Socket socket;
 	private boolean running = false;
-	
+
 	public static void main(String[] args)
 	{
 		SocketClient sc = new SocketClient("192.168.13.253", 7676);
 		try
 		{
 			sc.start();
-			sc.sendString("Socket test");
+			Scanner scanner = new Scanner(System.in);
+			while (true)
+			{
+				String input = scanner.nextLine();
+				if (input.equals("exit"))
+					break;
+				sc.sendString(input);
+			}
 		}
 		catch (UnknownHostException e)
 		{
@@ -52,7 +60,7 @@ public class SocketClient
 		socket = new Socket(serverIp, port);
 		System.out.println("本地端口：" + socket.getLocalPort());
 		running = true;
-		new Thread(new ReceiveWatchDog()).start(); //监听返回信息
+		new Thread(new ReceiveWatchDog()).start(); // 监听返回信息
 	}
 
 	public void stop()
@@ -68,7 +76,7 @@ public class SocketClient
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void sendString(String str) throws IOException
 	{
 		OutputStream os = socket.getOutputStream();
@@ -101,7 +109,8 @@ public class SocketClient
 						int dataLen = dis.available();
 						byte[] bytes = new byte[dataLen]; // 一次性读取
 						dis.readFully(bytes);
-//						System.out.println("get in hex : " + ByteUtils.byteArraytoHexString(bytes));
+						// System.out.println("get in hex : " +
+						// ByteUtils.byteArraytoHexString(bytes));
 						System.out.println("get in asc : " + ByteUtils.byteArrayToString(bytes));
 					}
 					else

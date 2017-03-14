@@ -152,7 +152,7 @@ public class XmlHelper
 			byte[] b = null;
 			if (childTypeString.equals("length"))
 				b = getLengthData(mem, res);
-			else if (childTypeString.equals("check"))
+			else if (childTypeString.equals("xor"))
 				b = getCheckData(mem, res);
 			res.put(mem.getName(), CollectionUtils.byteToByte(b));
 		}

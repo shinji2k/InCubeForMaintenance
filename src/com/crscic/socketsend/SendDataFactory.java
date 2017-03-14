@@ -214,8 +214,9 @@ public class SendDataFactory implements Runnable
 				{
 					if ((System.currentTimeMillis() - ii.getLastSendTimeMillis()) > ii.getIntervalMillis())
 					{
+						System.out.println("get " + ii.getProtocolName() + " data.");
 						byte b[] = xh.getDataByProtocol(ii.getProtocolName());
-						System.out.println("send " + ii.getProtocolName() + " : " + ByteUtils.byteArrayToString(b));
+						System.out.println("send : " + ByteUtils.byteArrayToString(b));
 						OutputStream os = s.getOutputStream();
 						if (s.isConnected())
 						{

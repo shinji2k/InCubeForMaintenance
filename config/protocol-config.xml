@@ -29,7 +29,7 @@
 			<value>
 				<part name="deviceid-file" desc="设备id外接文件信息">
 					<type>order</type>
-					<value>data\deviceid.txt</value>
+					<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\deviceid.txt</value>
 					<split></split>
 					<class>asc</class>
 					<len>17</len>
@@ -74,7 +74,7 @@
 									<value>
 										<part name="sectorpart-file" desc="防区ID读取的文件">
 											<type>order</type>
-											<value>data\sectorid.txt</value>
+											<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\sectorid.txt</value>
 											<split></split>
 											<class>asc</class>
 											<len></len>
@@ -86,7 +86,7 @@
 								</part>
 								<part name="timestamp" desc="报警ID中的时间戳部分">
 									<type>time</type>
-									<value>YYYYMMddHHmmssSSS</value>
+									<value>yyyyMMddHHmmssSSS</value>
 									<split></split>
 									<class>asc</class>
 									<len></len>
@@ -98,7 +98,7 @@
 						</part>
 						<part name="alarm-time" desc="报警时间">
 							<type>time</type>
-							<value>YYYY-MM-ddHH: mm: ss</value>
+							<value>yyyy-MM-ddHH: mm: ss</value>
 							<split></split>
 							<class>asc</class>
 							<len></len>
@@ -108,7 +108,7 @@
 							<value>
 								<part name="sectorid-file">
 									<type>order</type>
-									<value>data\sectorid.txt</value>
+									<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\sectorid.txt</value>
 									<split></split>
 									<class>asc</class>
 									<len></len>
@@ -123,7 +123,7 @@
 							<value>
 								<part name="devicetype-file">
 									<type>order</type>
-									<value>data\devicealarm.txt</value>
+									<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\devicealarm.txt</value>
 									<split></split>
 									<class>asc</class>
 									<len></len>
@@ -195,7 +195,7 @@
 			<value>
 				<part name="deviceid-file" desc="设备id外接文件信息">
 					<type>random</type>
-					<value>data\deviceid.txt</value>
+					<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\deviceid.txt</value>
 					<split></split>
 					<class>asc</class>
 					<len>17</len>
@@ -244,7 +244,7 @@
 							<value>
 								<part name="sectorid-file">
 									<type>random</type>
-									<value>data\sectorid.txt</value>
+									<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\sectorid.txt</value>
 									<split></split>
 									<class>asc</class>
 									<len></len>
@@ -266,7 +266,7 @@
 							<value>
 								<part name="companyinfo-file">
 									<type>random</type>
-									<value>data\companyinfo.txt</value>
+									<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\companyinfo.txt</value>
 									<split></split>
 									<class>asc</class>
 									<len></len>
