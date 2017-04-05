@@ -1,10 +1,14 @@
 package com.crscic.socketsend.socket;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 import com.crscic.socketsend.SendDataFactory;
+import com.crscic.socketsend.utils.ByteUtils;
 import com.crscic.socketsend.utils.StringUtils;
 
 /**
@@ -15,8 +19,32 @@ public class SocketServer
 	public static void main(String[] args)
 	{
 		int port = 7676;
-		SocketServer server = new SocketServer(port);
-		server.start();
+		try
+		{
+			ServerSocket ss = new ServerSocket(port, 5);
+			Socket s = ss.accept();
+			System.out.println("recv:" + s.getRemoteSocketAddress());
+			while(true)
+			{
+				InputStream is = s.getInputStream();
+				if (is.available() > 0)
+				{
+					System.out.print("receive data: ");
+					BufferedInputStream bis = new BufferedInputStream(is);
+					DataInputStream dis = new DataInputStream(bis);
+					int dataLen = dis.available();
+					byte[] bytes = new byte[dataLen]; // 一次性读取
+					dis.readFully(bytes);
+					System.out.println(ByteUtils.byteArrayToString(bytes));
+				}
+			}
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+//		SocketServer server = new SocketServer(port);
+//		server.start();
 	}
 
 	private int port;

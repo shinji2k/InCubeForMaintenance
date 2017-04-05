@@ -8,8 +8,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Scanner;
-
+import com.crscic.socketsend.SendDataFactory;
 import com.crscic.socketsend.utils.ByteUtils;
 
 /**
@@ -21,36 +20,17 @@ public class SocketClient
 	private int port;
 	private Socket socket;
 	private boolean running = false;
+	private String configPath;
 
 	public static void main(String[] args)
 	{
-		SocketClient sc = new SocketClient("192.168.13.253", 7676);
-		try
-		{
-			sc.start();
-			Scanner scanner = new Scanner(System.in);
-			while (true)
-			{
-				String input = scanner.nextLine();
-				if (input.equals("exit"))
-					break;
-				sc.sendString(input);
-			}
-		}
-		catch (UnknownHostException e)
-		{
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
 	}
 
-	public SocketClient(String serverIp, int port)
+	public SocketClient(String serverIp, int port, String configPath)
 	{
 		this.serverIp = serverIp;
 		this.port = port;
+		this.configPath = configPath;
 	}
 
 	public void start() throws UnknownHostException, IOException
@@ -60,7 +40,7 @@ public class SocketClient
 		socket = new Socket(serverIp, port);
 		System.out.println("本地端口：" + socket.getLocalPort());
 		running = true;
-		new Thread(new ReceiveWatchDog()).start(); // 监听返回信息
+		new Thread(new SendDataFactory(socket, this.configPath)).start(); // 监听返回信息
 	}
 
 	public void stop()

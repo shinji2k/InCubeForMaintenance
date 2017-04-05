@@ -2,13 +2,13 @@
 <root>
 	<socket>
 		<!-- server or client -->
-		<type>server</type>
+		<type>client</type>
 		<!-- if server, set null -->
-		<ip></ip>
+		<ip>192.168.13.253</ip>
 		<port>7676</port>
 	</socket>
 
-	<protocol config="D:\WorkSpace\Java\Eclipse\SocketSend\config\protocol-config.xml">
+	<protocol config="D:\WorkSpace\Java\Eclipse\SocketSend\config\protocol-config-tower.xml">
 		<interval time="30000" protocol="status" />
 		<interval time="5000" protocol="alarm" />
 	</protocol>

@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<root>
+	<protocols>
+		<pro>alarm_report</pro>
+		<pro>status</pro>
+	</protocols>
+
+	<alarm_report>
+		<part name="head" desc="数据包头">
+			<type>aptotic</type>
+			<value>23646C686A7478787923</value>
+			<class>byte</class>
+			<len>10</len>
+		</part>
+		<!-- length类型必须如下面这种结构，且位于最表层，子节点type不能为空 -->
+		<part name="length" desc="报文总长度">
+			<type>length</type>
+			<value>
+				<part name="length-range" desc="不包含帧头和CRC校验外其他所有字节的总长度">
+					<type>length</type>
+					<value>serials_no,pk_type,enum_state,content</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>asc</class>
+					<len></len>
+				</part>
+			</value>
+			<class>asc</class>
+			<len>4</len>
+		</part>
+		<part name="serials_no" desc="报文序号">
+			<type>aptotic</type>
+			<value>1f40</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="pk_type" desc="命令字">
+			<type>aptotic</type>
+			<value>01f7</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="cnt" desc="数量">
+			<type>aptotic</type>
+			<value>00000001</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="id" desc="数据点ID">
+			<type>aptotic</type>
+			<value>08020801</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="enum_state" desc="告警状态">
+			<type>random</type>
+			<value>1,2,3</value>
+			<class>asc</class>
+			<len>4</len>
+		</part>
+		<part name="content" desc="业务数据内容">
+			<type>generate</type>
+			<value>
+				<part name="content-header" desc="业务数据头">
+					<type>aptotic</type>
+					<value>[</value>
+					<split></split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>asc</class>
+					<len></len>
+				</part>
+				<part name="body" desc="业务数据具体内容">
+					<type>generate</type>
+					<value>
+						<part name="object_name" desc="对象名称">
+							<type>aptotic</type>
+							<value>X轴倾斜角</value>
+							<split></split>
+							<fill-byte>20</fill-byte>
+							<fill-direction>right</fill-direction>
+							<class>asc</class>
+							<len>42</len>
+						</part>
+						<part name="id_desc" desc="数据点ID">
+							<type>aptotic</type>
+							<value>08020801</value>
+							<split></split>
+							<fill-byte></fill-byte>
+							<fill-direction></fill-direction>
+							<class>asc</class>
+							<len></len>
+						</part>
+						<part name="alarm_level" desc="告警级别">
+							<type>random</type>
+							<value>紧急,重要,一般,正常</value>
+							<split></split>
+							<fill-byte></fill-byte>
+							<fill-direction></fill-direction>
+							<class>asc</class>
+							<len></len>
+						</part>
+						<part name="alarm_text" desc="告警文本">
+							<type>aptotic</type>
+							<value>X轴超限</value>
+							<split></split>
+							<fill-byte>20</fill-byte>
+							<fill-direction>right</fill-direction>
+							<class>asc</class>
+							<len>32</len>
+						</part>
+					</value>
+					<split>tab</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+				<part name="content-tail" desc="业务数据尾">
+					<type>aptotic</type>
+					<value>]</value>
+					<split></split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>asc</class>
+					<len></len>
+				</part>
+			</value>
+			<class>asc</class>
+			<len></len>
+		</part>
+		<part name="check" desc="校验码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="长度+报文序号+命令字+内容">
+					<type>crc</type>
+					<value>length,serials_no,pk_type,content</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+	</alarm_report>
+
+	<status>
+		<part name="head" desc="数据包头">
+			<type>aptotic</type>
+			<value>ffffffff</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="type" desc="业务数据类型">
+			<type>aptotic</type>
+			<value>02</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="version" desc="数据版本">
+			<type>aptotic</type>
+			<value>01</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="deviceid" desc="设备id">
+			<type>file</type>
+			<value>
+				<part name="deviceid-file" desc="设备id外接文件信息">
+					<type>random</type>
+					<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\deviceid.txt</value>
+					<split></split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>asc</class>
+					<len>17</len>
+				</part>
+			</value>
+			<class></class>
+			<len></len>
+		</part>
+		<!-- length类型必须如下面这种结构，且位于最表层，子节点type不能为空 -->
+		<part name="length" desc="业务数据内容长度">
+			<type>length</type>
+			<value>
+				<part name="length-range" desc="计算长度的字段范围">
+					<type>length</type>
+					<value>content</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>asc</class>
+					<len></len>
+				</part>
+			</value>
+			<class>asc</class>
+			<len>4</len>
+		</part>
+		<part name="content" desc="业务数据内容">
+			<type>generate</type>
+			<value>
+				<part name="content-header" desc="业务数据头">
+					<type>aptotic</type>
+					<value>[</value>
+					<split></split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>asc</class>
+					<len></len>
+				</part>
+				<part name="body" desc="业务数据具体内容">
+					<type>generate</type>
+					<value>
+						<part name="return-type" desc="返回类型">
+							<type>random</type>
+							<value>0,1,2,3</value>
+							<split>,</split>
+							<fill-byte></fill-byte>
+							<fill-direction></fill-direction>
+							<class>asc</class>
+							<len></len>
+						</part>
+						<part name="sector-id" desc="防区ID">
+							<type>file</type>
+							<value>
+								<part name="sectorid-file">
+									<type>random</type>
+									<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\sectorid.txt
+									</value>
+									<split></split>
+									<fill-byte></fill-byte>
+									<fill-direction></fill-direction>
+									<class>asc</class>
+									<len></len>
+								</part>
+							</value>
+							<split></split>
+							<fill-byte></fill-byte>
+							<fill-direction></fill-direction>
+							<class>asc</class>
+							<len></len>
+						</part>
+						<part name="sector-status" desc="防区状态">
+							<type>random</type>
+							<value>0,1</value>
+							<split>,</split>
+							<fill-byte></fill-byte>
+							<fill-direction></fill-direction>
+							<class>asc</class>
+							<len></len>
+						</part>
+						<part name="company-info" desc="厂商自定义信息">
+							<type>file</type>
+							<value>
+								<part name="companyinfo-file">
+									<type>random</type>
+									<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\companyinfo.txt
+									</value>
+									<split></split>
+									<fill-byte></fill-byte>
+									<fill-direction></fill-direction>
+									<class>asc</class>
+									<len></len>
+								</part>
+							</value>
+							<split></split>
+							<fill-byte></fill-byte>
+							<fill-direction></fill-direction>
+							<class>asc</class>
+							<len></len>
+						</part>
+					</value>
+					<split>#</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+				<part name="content-tail" desc="业务数据尾">
+					<type>aptotic</type>
+					<value>]</value>
+					<split></split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>asc</class>
+					<len></len>
+				</part>
+			</value>
+			<class>asc</class>
+			<len></len>
+		</part>
+		<part name="check" desc="校验码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="生成校验的详细信息">
+					<type>xor</type>
+					<value>content</value>
+					<split></split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="tail" desc="数据包尾">
+			<type>aptotic</type>
+			<value>dddddddd</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+	</status>
+</root>

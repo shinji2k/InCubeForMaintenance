@@ -11,6 +11,21 @@ import java.nio.charset.Charset;
  */
 public class ByteUtils
 {
+	
+	/**
+	 * 将16位的int高低位互换，返回2字节长度的byte数组。
+	 * 主要应用于大端机报文发送时调整字节顺序
+	 *
+	 * @param src
+	 * @return
+	 * @author zhaokai
+	 * @version 2017年4月2日 上午10:49:07
+	 */
+	public static byte[] swapHighLow(int src)
+	{
+        return new byte[]{(byte) (src& 0xFF00), (byte) (src & 0x00FF)};  
+	}
+	
 	/**
 	 * 将byte数组拼接为字符串(内容为16进制显示)返回
 	 * 
@@ -163,16 +178,6 @@ public class ByteUtils
 		long l = getLong(bytes);
 		System.out.println(l);
 		return Double.longBitsToDouble(l);
-	}
-
-	public static String getString(byte[] bytes, String charsetName)
-	{
-		return new String(bytes, Charset.forName(charsetName));
-	}
-
-	public static String getString(byte[] bytes)
-	{
-		return getString(bytes, "GBK");
 	}
 
 	/**

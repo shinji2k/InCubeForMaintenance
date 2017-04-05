@@ -8,6 +8,8 @@ public class PartMem
 {
 	private Element childPart;
 	private String length;
+	private String fillByteString;
+	private String fillDirection;
 	private String childType;
 	private String name;
 	private List<String> rangeList;
@@ -65,6 +67,26 @@ public class PartMem
 	public PartMem()
 	{
 		// TODO Auto-generated constructor stub
+	}
+
+	public String getFillByteString()
+	{
+		return fillByteString;
+	}
+
+	public void setFillByteString(String fillByteString)
+	{
+		this.fillByteString = fillByteString;
+	}
+
+	public String getFillDirection()
+	{
+		return fillDirection;
+	}
+
+	public void setFillDirection(String fillDirection)
+	{
+		this.fillDirection = fillDirection;
 	}
 
 }

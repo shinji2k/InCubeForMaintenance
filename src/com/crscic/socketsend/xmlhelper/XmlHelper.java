@@ -154,6 +154,8 @@ public class XmlHelper
 				b = getLengthData(mem, res);
 			else if (childTypeString.equals("xor"))
 				b = getCheckData(mem, res);
+			else if (childTypeString.equals("crc"))
+				b = getCheckData(mem, res);
 			res.put(mem.getName(), CollectionUtils.byteToByte(b));
 		}
 		return res;
@@ -182,7 +184,46 @@ public class XmlHelper
 		byte[] b = null;
 		if (mem.getChildType().equals("xor"))
 			b = getXorData(data);
+		else if (mem.getChildType().equals("crc"))
+			b = getCrcData(data);
+
 		return b;
+	}
+
+	/**
+	 * 获取CRC校验，长度2字节。采用CRC-16/MODBUS（x16+x15+x2+1）加密
+	 *
+	 * @param data
+	 * @return
+	 * @author zhaokai
+	 * @version 2017年4月2日 上午9:57:20
+	 */
+	private byte[] getCrcData(List<Byte> data)
+	{
+		int len = data.size();
+
+		// 预置 1 个 16 位的寄存器为十六进制FFFF, 称此寄存器为 CRC寄存器。
+		int crc = 0xFFFF;
+		int i, j;
+		for (i = 0; i < len; i++)
+		{
+			// 把第一个 8 位二进制数据 与 16 位的 CRC寄存器的低 8 位相异或, 把结果放于 CRC寄存器
+			crc = ((crc & 0xFF00) | (crc & 0x00FF) ^ (data.get(i) & 0xFF));
+			for (j = 0; j < 8; j++)
+			{
+				// 把 CRC 寄存器的内容右移一位( 朝低位)用 0 填补最高位, 并检查右移后的移出位
+				if ((crc & 0x0001) > 0)
+				{
+					// 如果移出位为 1, CRC寄存器与多项式A001进行异或
+					crc = crc >> 1;
+					crc = crc ^ 0xA001;
+				}
+				else
+					// 如果移出位为 0,再次右移一位
+					crc = crc >> 1;
+			}
+		}
+		return ByteUtils.swapHighLow(crc);
 	}
 
 	/**
@@ -270,11 +311,6 @@ public class XmlHelper
 		Element valueNode = part.element("value");
 		if (valueNode == null)
 			throw AppException.nullNodeErr(part, "value");
-		// length检查
-		Element lenNode = part.element("len");
-		if (lenNode == null)
-			throw AppException.nullNodeErr(part, "len");
-		String lenString = lenNode.getTextTrim();
 		// value中子part检查
 		Element childPart = valueNode.element("part");
 		if (childPart == null)
@@ -296,6 +332,8 @@ public class XmlHelper
 		mem.setName(attrInfo);
 		mem.setChildType(childTypeString);
 		mem.setChildPart(childPart); // 暂时没用，存上备用
+		// length检查
+		String lenString = getNodeValue(part, "len");
 		if (!StringUtils.isNullOrEmpty(lenString))
 			mem.setLength(lenString);
 		// 检查合法性
@@ -309,7 +347,7 @@ public class XmlHelper
 		Element splitNode = childPart.element("split");
 		if (splitNode == null)
 			throw AppException.nullNodeErr(childPart, "split");
-		String splitString = splitNode.getTextTrim();
+		String splitString = getSplitString(splitNode.getTextTrim());
 		List<String> rangePart = new ArrayList<String>();
 		if (!StringUtils.isNullOrEmpty(splitString))
 		{
@@ -321,6 +359,24 @@ public class XmlHelper
 			rangePart.add(rangeString);
 		mem.setRangeList(rangePart);
 		partMem.add(mem);
+	}
+
+	/**
+	 * 获取分隔符，若分隔符是特殊字符，则返回特殊字符，否则原样返回
+	 *
+	 * @param split
+	 * @return
+	 * @author zhaokai
+	 * @version 2017年3月20日 下午4:36:27
+	 */
+	private String getSplitString(String split)
+	{
+		String res = split;
+		if (StringUtils.isNullOrEmpty(res))
+			return res;
+		if (res.toLowerCase().equals("tab"))
+			return "\t";
+		return res;
 	}
 
 	/**
@@ -336,16 +392,41 @@ public class XmlHelper
 		String valueString = getNodeValue(part, "value");
 		// split节点
 		String splitString = getNodeValue(part, "split");
+		splitString = getSplitString(splitString);
 		// 对给定范围内的值进行随机
 		String[] randomArray = valueString.split(splitString);
 		Random r = new Random();
 		int randomIndex = r.nextInt(randomArray.length);
 		String res = randomArray[randomIndex];
+
+		byte[] b = null;
 		// class节点，先取得随机数后在判断class
 		String classString = getNodeValue(part, "class");
 		if (classString.equals("byte"))
-			return ByteUtils.hexStringToBytes(res);
-		return res.getBytes();
+			b = ByteUtils.hexStringToBytes(res);
+		else
+			b = res.getBytes();
+		// 长度校验
+		int len = 0;
+		String lenString = getNodeValue(part, "len");
+		if (!StringUtils.isNullOrEmpty(lenString))
+			len = Integer.parseInt(lenString);
+
+		// 检查有没有配置fill-byte，若配置了则说明需要填充
+		Element fillByteNode = part.element("fill-byte");
+		if (fillByteNode != null)
+		{
+			String fillByteString = fillByteNode.getTextTrim();
+			if (!StringUtils.isNullOrEmpty(fillByteString))
+			{
+				String fillDirectionString = getNodeValue(part, "fill-direction");
+				b = doFill(b, fillByteString, fillDirectionString, len);
+			}
+		}
+
+		if (len > 0 && b.length != len)
+			throw AppException.lengthErr(part);
+		return b;
 	}
 
 	/**
@@ -358,16 +439,10 @@ public class XmlHelper
 	 */
 	private byte[] getTimeData(Element part) throws AppException
 	{
-		Element valueNode = part.element("value");
-		if (null == valueNode)
-			throw AppException.nullNodeErr(part, "value");
-		String valueString = valueNode.getTextTrim();
+		String valueString = getNodeValue(part, "value");
 		if (StringUtils.isNullOrEmpty(valueString))
 			throw AppException.nodeErr(part, "value");
-		Element classNode = part.element("class");
-		if (null == classNode)
-			throw AppException.nullNodeErr(part, "class");
-		String classString = valueNode.getTextTrim();
+		String classString = getNodeValue(part, "class");
 		if (StringUtils.isNullOrEmpty(classString))
 			throw AppException.nodeErr(part, "class");
 		if (classString.equals("byte"))
@@ -376,7 +451,30 @@ public class XmlHelper
 			return null;
 		SimpleDateFormat f = new SimpleDateFormat(valueString);
 		String timeString = f.format(new Date());
-		return timeString.getBytes();
+
+		byte[] b = null;
+		b = timeString.getBytes();
+		// 长度校验
+		int len = 0;
+		String lenString = getNodeValue(part, "len");
+		if (!StringUtils.isNullOrEmpty(lenString))
+			len = Integer.parseInt(lenString);
+
+		// 检查有没有配置fill-byte，若配置了则说明需要填充
+		Element fillByteNode = part.element("fill-byte");
+		if (fillByteNode != null)
+		{
+			String fillByteString = fillByteNode.getTextTrim();
+			if (!StringUtils.isNullOrEmpty(fillByteString))
+			{
+				String fillDirectionString = getNodeValue(part, "fill-direction");
+				b = doFill(b, fillByteString, fillDirectionString, len);
+			}
+		}
+
+		if (len > 0 && b.length != len)
+			throw AppException.lengthErr(part);
+		return b;
 	}
 
 	/**
@@ -394,7 +492,7 @@ public class XmlHelper
 		Element splitNode = target.element("split");
 		if (null != splitNode)
 		{
-			splitString = splitNode.getTextTrim();
+			splitString = getSplitString(splitNode.getTextTrim());
 			if (!StringUtils.isNullOrEmpty(splitString))
 				split = ByteUtils.getBytes(splitString);
 		}
@@ -428,22 +526,86 @@ public class XmlHelper
 	 */
 	private byte[] getAptoticData(Element part) throws AppException
 	{
-		String lenString = getNodeValue(part, "len");
-		int len = 0;
-		if (!StringUtils.isNullOrEmpty(lenString))
-			len = Integer.parseInt(lenString);
 		byte[] b;
+		// 获取value的值
+		String valueString = getNodeValue(part, "value");
 		// xml中value是16进制字符串，将其装换为byte
 		String classString = getNodeValue(part, "class");
 		if (StringUtils.isNullOrEmpty(classString))
 			throw AppException.nodeErr(part, "class");
 		if (classString.equals("byte"))
-			b = ByteUtils.hexStringToBytes(part.element("value").getTextTrim());
+			b = ByteUtils.hexStringToBytes(valueString);
 		else // xml中value是ascii符号
-			b = part.element("value").getTextTrim().getBytes();
+			b = valueString.getBytes();
+		String lenString = getNodeValue(part, "len");
+		int len = 0;
+		if (!StringUtils.isNullOrEmpty(lenString))
+			len = Integer.parseInt(lenString);
+		// 检查有没有配置fill-byte，若配置了则说明需要填充
+		Element fillByteNode = part.element("fill-byte");
+		if (fillByteNode != null)
+		{
+			String fillByteString = fillByteNode.getTextTrim();
+			if (!StringUtils.isNullOrEmpty(fillByteString))
+			{
+				String fillDirectionString = getNodeValue(part, "fill-direction");
+				b = doFill(b, fillByteString, fillDirectionString, len);
+			}
+		}
 		if (len > 0 && b.length != len)
 			throw AppException.lengthErr(part);
 		return b;
+	}
+
+	/**
+	 * 长度不足时填充指定字节补足长度
+	 *
+	 * @param value
+	 *            待填充的内容
+	 * @param fillByteString
+	 *            填充时使用的字节，16进制字符串形式
+	 * @param fillDirect
+	 *            填充方向，在左侧填充还是右侧填充
+	 * @param len
+	 *            填充后的长度
+	 * @return
+	 * @throws AppException
+	 *             当填充字符不为1字节时抛出异常
+	 * @author zhaokai
+	 * @version 2017年4月5日 下午4:29:44
+	 */
+	private byte[] doFill(byte[] value, String fillByteString, String fillDirect, int len) throws AppException
+	{
+		if (len == 0)
+			return value;
+		int fillNum = len - value.length;
+		byte[] res = new byte[len];
+		byte[] b = ByteUtils.hexStringToBytes(fillByteString);
+		if (b.length > 1)
+			throw new AppException("填充字符只能为1字节");
+		byte fillCharByte = b[0];
+
+		if (fillDirect.equals("right"))
+		{
+			for (int i = 0; i < len; i++)
+			{
+				if (i < value.length)
+					res[i] = value[i];
+				else
+					res[i] = fillCharByte;
+			}
+		}
+		else
+		{
+			for (int i = 0; i < len; i++)
+			{
+				if (i < fillNum)
+					res[i] = fillCharByte;
+				else
+					res[i] = value[i - fillNum];
+			}
+		}
+		return res;
 	}
 
 	/**
@@ -504,12 +666,22 @@ public class XmlHelper
 			b = line.getBytes();
 		// 长度校验
 		String lenString = getNodeValue(child, "len");
+		int len = 0;
 		if (!StringUtils.isNullOrEmpty(lenString))
+			len = Integer.parseInt(lenString);
+		// 检查有没有配置fill-byte，若配置了则说明需要填充
+		Element fillByteNode = child.element("fill-byte");
+		if (fillByteNode != null)
 		{
-			int len = Integer.parseInt(lenString);
-			if (len != b.length)
-				throw AppException.lengthErr(child);
+			String fillByteString = fillByteNode.getTextTrim();
+			if (!StringUtils.isNullOrEmpty(fillByteString))
+			{
+				String fillDirectionString = getNodeValue(child, "fill-direction");
+				b = doFill(b, fillByteString, fillDirectionString, len);
+			}
 		}
+		if (len > 0 && len != b.length)
+			throw AppException.lengthErr(child);
 
 		return b;
 	}

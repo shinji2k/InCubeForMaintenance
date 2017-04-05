@@ -79,7 +79,7 @@ public class SendDataFactory implements Runnable
 			return;
 		}
 		
-		SocketClient sc = new SocketClient(si.getIp(), Integer.parseInt(si.getPort()));
+		SocketClient sc = new SocketClient(si.getIp(), Integer.parseInt(si.getPort()), this.configPath);
 		try
 		{
 			sc.start();
@@ -281,7 +281,8 @@ public class SendDataFactory implements Runnable
 	{
 		SendDataFactory sdf = new SendDataFactory();
 		sdf.init("config/config.xml");
-		sdf.startSocketServer();
+		sdf.startSocketClient();
+//		sdf.startSocketServer();
 		// String hexString = "ffffffff";
 		// System.out.println(ByteUtils.byteArraytoHexString(ByteUtils.hexStringToBytes(hexString)));
 	}
