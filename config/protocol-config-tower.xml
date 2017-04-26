@@ -12,18 +12,18 @@
 			<class>byte</class>
 			<len>10</len>
 		</part>
-		<!-- length类型必须如下面这种结构，且位于最表层，子节点type不能为空 -->
+		<!-- length类型必须如下面这种结构，且位于最表层，子节点type不能为空，且最外层的name必须为length -->
 		<part name="length" desc="报文总长度">
 			<type>length</type>
 			<value>
 				<part name="length-range" desc="不包含帧头和CRC校验外其他所有字节的总长度">
 					<type>length</type>
-					<value>serials_no,pk_type,enum_state,content</value>
+					<value>length,serials_no,pk_type,cnt,id,enum_state,content</value>
 					<split>,</split>
 					<fill-byte></fill-byte>
 					<fill-direction></fill-direction>
 					<class>asc</class>
-					<len></len>
+					<len>4</len>
 				</part>
 			</value>
 			<class>asc</class>
@@ -31,13 +31,13 @@
 		</part>
 		<part name="serials_no" desc="报文序号">
 			<type>aptotic</type>
-			<value>1f40</value>
+			<value>00001f40</value>
 			<class>byte</class>
 			<len>4</len>
 		</part>
 		<part name="pk_type" desc="命令字">
 			<type>aptotic</type>
-			<value>01f7</value>
+			<value>000001f7</value>
 			<class>byte</class>
 			<len>4</len>
 		</part>
@@ -49,14 +49,14 @@
 		</part>
 		<part name="id" desc="数据点ID">
 			<type>aptotic</type>
-			<value>08020801</value>
+			<value>08020fff</value>
 			<class>byte</class>
 			<len>4</len>
 		</part>
 		<part name="enum_state" desc="告警状态">
 			<type>random</type>
-			<value>1,2,3</value>
-			<class>asc</class>
+			<value>00000001,00000002,00000003</value>
+			<class>byte</class>
 			<len>4</len>
 		</part>
 		<part name="content" desc="业务数据内容">
@@ -85,12 +85,12 @@
 						</part>
 						<part name="id_desc" desc="数据点ID">
 							<type>aptotic</type>
-							<value>08020801</value>
+							<value>08020fff</value>
 							<split></split>
 							<fill-byte></fill-byte>
 							<fill-direction></fill-direction>
-							<class>asc</class>
-							<len></len>
+							<class>byte</class>
+							<len>4</len>
 						</part>
 						<part name="alarm_level" desc="告警级别">
 							<type>random</type>
@@ -103,11 +103,11 @@
 						</part>
 						<part name="alarm_text" desc="告警文本">
 							<type>aptotic</type>
-							<value>X轴超限</value>
+							<value>12.34</value>
 							<split></split>
 							<fill-byte>20</fill-byte>
 							<fill-direction>right</fill-direction>
-							<class>asc</class>
+							<class>float</class>
 							<len>32</len>
 						</part>
 					</value>
@@ -135,7 +135,7 @@
 			<value>
 				<part name="check-info" desc="长度+报文序号+命令字+内容">
 					<type>crc</type>
-					<value>length,serials_no,pk_type,content</value>
+					<value>length,serials_no,pk_type,cnt,id,enum_state,content</value>
 					<split>,</split>
 					<fill-byte></fill-byte>
 					<fill-direction></fill-direction>
@@ -298,7 +298,7 @@
 			<value>
 				<part name="check-info" desc="生成校验的详细信息">
 					<type>xor</type>
-					<value>content</value>
+					<value>length,serials_no,pk_type,enum_state,content</value>
 					<split></split>
 					<fill-byte></fill-byte>
 					<fill-direction></fill-direction>

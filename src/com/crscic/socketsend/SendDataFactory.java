@@ -216,7 +216,9 @@ public class SendDataFactory implements Runnable
 					{
 						System.out.println("get " + ii.getProtocolName() + " data.");
 						byte b[] = xh.getDataByProtocol(ii.getProtocolName());
+						System.out.println("==========================================");
 						System.out.println("send : " + ByteUtils.byteArrayToString(b));
+						System.out.println("send : " + ByteUtils.byteArraytoHexString(b));
 						OutputStream os = s.getOutputStream();
 						if (s.isConnected())
 						{

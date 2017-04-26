@@ -146,13 +146,25 @@ public class XmlHelper
 	{
 		if (partMem.size() == 0) // 不需要补完
 			return res;
+		// 先计算长度，再生成校验
+		PartMem m = new PartMem();
+		m.setName("length");
+		int lenIndex = partMem.indexOf(m);
+		if (lenIndex > -1)
+		{
+			m = partMem.get(lenIndex);
+			byte[] t = getLengthData(m, res);
+			res.put(m.getName(), CollectionUtils.byteToByte(t));
+
+			partMem.remove(m);
+		}
+
+		// 循环填充其他需要补完的字段，目前主要是校验
 		for (PartMem mem : partMem)
 		{
 			String childTypeString = mem.getChildType();
 			byte[] b = null;
-			if (childTypeString.equals("length"))
-				b = getLengthData(mem, res);
-			else if (childTypeString.equals("xor"))
+			if (childTypeString.equals("xor"))
 				b = getCheckData(mem, res);
 			else if (childTypeString.equals("crc"))
 				b = getCheckData(mem, res);
@@ -255,7 +267,12 @@ public class XmlHelper
 		int len = 0;
 		List<String> rangeList = mem.getRangeList();
 		for (String range : rangeList)
-			len += content.get(range).length;
+		{
+			if (range.equals("length"))
+				len += 4;
+			else
+				len += content.get(range).length;
+		}
 		return ByteUtils.intToByteArray(len);
 	}
 
@@ -391,7 +408,14 @@ public class XmlHelper
 	{
 		String valueString = getNodeValue(part, "value");
 		// split节点
-		String splitString = getNodeValue(part, "split");
+		String splitString = ",";
+		Element splitNode = part.element("split");
+		if (splitNode != null)
+		{
+			splitString = splitNode.getTextTrim();
+			if (StringUtils.isNullOrEmpty(splitString))
+				splitString = ",";
+		}
 		splitString = getSplitString(splitString);
 		// 对给定范围内的值进行随机
 		String[] randomArray = valueString.split(splitString);
@@ -402,10 +426,7 @@ public class XmlHelper
 		byte[] b = null;
 		// class节点，先取得随机数后在判断class
 		String classString = getNodeValue(part, "class");
-		if (classString.equals("byte"))
-			b = ByteUtils.hexStringToBytes(res);
-		else
-			b = res.getBytes();
+		b = getByteArrayByClass(res, classString);
 		// 长度校验
 		int len = 0;
 		String lenString = getNodeValue(part, "len");
@@ -424,7 +445,7 @@ public class XmlHelper
 			}
 		}
 
-		if (len > 0 && b.length != len)
+		if (len > 0 && (b.length != len || b.length > len))
 			throw AppException.lengthErr(part);
 		return b;
 	}
@@ -445,15 +466,11 @@ public class XmlHelper
 		String classString = getNodeValue(part, "class");
 		if (StringUtils.isNullOrEmpty(classString))
 			throw AppException.nodeErr(part, "class");
-		if (classString.equals("byte"))
-			// 若是xml中定义数据类型是byte类型，则返回null
-			// 按说type是time类型的，不应存在class是byte的可能，若并存只能是错误
-			return null;
+
 		SimpleDateFormat f = new SimpleDateFormat(valueString);
 		String timeString = f.format(new Date());
 
-		byte[] b = null;
-		b = timeString.getBytes();
+		byte[] b = getByteArrayByClass(timeString, classString);
 		// 长度校验
 		int len = 0;
 		String lenString = getNodeValue(part, "len");
@@ -472,7 +489,7 @@ public class XmlHelper
 			}
 		}
 
-		if (len > 0 && b.length != len)
+		if (len > 0 && (b.length != len || b.length > len))
 			throw AppException.lengthErr(part);
 		return b;
 	}
@@ -533,10 +550,7 @@ public class XmlHelper
 		String classString = getNodeValue(part, "class");
 		if (StringUtils.isNullOrEmpty(classString))
 			throw AppException.nodeErr(part, "class");
-		if (classString.equals("byte"))
-			b = ByteUtils.hexStringToBytes(valueString);
-		else // xml中value是ascii符号
-			b = valueString.getBytes();
+		b = getByteArrayByClass(valueString, classString);
 		String lenString = getNodeValue(part, "len");
 		int len = 0;
 		if (!StringUtils.isNullOrEmpty(lenString))
@@ -552,7 +566,7 @@ public class XmlHelper
 				b = doFill(b, fillByteString, fillDirectionString, len);
 			}
 		}
-		if (len > 0 && b.length != len)
+		if (len > 0 && (b.length != len || b.length > len))
 			throw AppException.lengthErr(part);
 		return b;
 	}
@@ -660,10 +674,7 @@ public class XmlHelper
 
 		byte[] b = null;
 		String classString = getNodeValue(child, "class");
-		if (classString != null && classString.equals("byte"))
-			b = ByteUtils.hexStringToBytes(line);
-		else
-			b = line.getBytes();
+		b = getByteArrayByClass(line, classString);
 		// 长度校验
 		String lenString = getNodeValue(child, "len");
 		int len = 0;
@@ -683,6 +694,39 @@ public class XmlHelper
 		if (len > 0 && len != b.length)
 			throw AppException.lengthErr(child);
 
+		return b;
+	}
+
+	/**
+	 * 根据class节点的内容对数据进行处理并返回处理后的byte数组
+	 *
+	 * @param src
+	 * @param classString
+	 * @return
+	 * @author zhaokai
+	 * @version 2017年4月13日 上午10:07:42
+	 */
+	private byte[] getByteArrayByClass(String src, String classString)
+	{
+		byte[] b = null;
+		if (classString != null)
+		{
+			if (classString.equals("byte"))
+			{
+				b = ByteUtils.hexStringToBytes(src);
+			}
+			else if (classString.equals("float"))
+			{
+				Float f = new Float(Float.parseFloat(src) * 100);
+				//按照铁标只需要float乘以100发送，不需要转int
+//				b = ByteUtils.getBytes(f);
+				b = ByteUtils.getBytes(f.intValue());
+			}
+			else
+			{
+				b = ByteUtils.getBytes(src);
+			}
+		}
 		return b;
 	}
 

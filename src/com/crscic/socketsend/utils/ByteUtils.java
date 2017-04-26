@@ -11,10 +11,9 @@ import java.nio.charset.Charset;
  */
 public class ByteUtils
 {
-	
+
 	/**
-	 * 将16位的int高低位互换，返回2字节长度的byte数组。
-	 * 主要应用于大端机报文发送时调整字节顺序
+	 * 将16位的int高低位互换，返回2字节长度的byte数组。 主要应用于大端机报文发送时调整字节顺序
 	 *
 	 * @param src
 	 * @return
@@ -23,9 +22,10 @@ public class ByteUtils
 	 */
 	public static byte[] swapHighLow(int src)
 	{
-        return new byte[]{(byte) (src& 0xFF00), (byte) (src & 0x00FF)};  
+		return new byte[]
+		{ (byte) (src & 0xFF00), (byte) (src & 0x00FF) };
 	}
-	
+
 	/**
 	 * 将byte数组拼接为字符串(内容为16进制显示)返回
 	 * 
@@ -100,10 +100,10 @@ public class ByteUtils
 	public static byte[] getBytes(int data)
 	{
 		byte[] bytes = new byte[4];
-		bytes[0] = (byte) (data & 0xff);
-		bytes[1] = (byte) ((data & 0xff00) >> 8);
-		bytes[2] = (byte) ((data & 0xff0000) >> 16);
-		bytes[3] = (byte) ((data & 0xff000000) >> 24);
+		bytes[0] = (byte) ((data >> 24) & 0xFF);
+		bytes[1] = (byte) ((data >> 16) & 0xFF);
+		bytes[2] = (byte) ((data >> 8) & 0xFF);
+		bytes[3] = (byte) (data & 0xFF);
 		return bytes;
 	}
 
@@ -139,6 +139,15 @@ public class ByteUtils
 		return data.getBytes(charset);
 	}
 
+	/**
+	 * 以默认的GBK编码格式将字符串转为byte数组。 若指定编码格式，请使用getBytes(String data, String
+	 * charsetName)方法
+	 *
+	 * @param data
+	 * @return
+	 * @author zhaokai
+	 * @version 2017年4月12日 下午3:58:17
+	 */
 	public static byte[] getBytes(String data)
 	{
 		return getBytes(data, "GBK");
@@ -156,8 +165,8 @@ public class ByteUtils
 
 	public static int getInt(byte[] bytes)
 	{
-		return (0xff & bytes[0]) | (0xff00 & (bytes[1] << 8)) | (0xff0000 & (bytes[2] << 16))
-				| (0xff000000 & (bytes[3] << 24));
+		return (int) (((bytes[0] & 0xFF) << 24) | ((bytes[0 + 1] & 0xFF) << 16) | ((bytes[0 + 2] & 0xFF) << 8)
+				| (bytes[0 + 3] & 0xFF));
 	}
 
 	public static long getLong(byte[] bytes)
@@ -210,6 +219,15 @@ public class ByteUtils
 		// return Float.intBitsToFloat(accum);
 	}
 
+	/**
+	 * byte数组转为字符串，使用指定的编码进行转换
+	 *
+	 * @param b
+	 * @param charSet
+	 * @return
+	 * @author zhaokai
+	 * @version 2017年4月12日 下午3:55:39
+	 */
 	public static String byteArrayToString(byte[] b, String charSet)
 	{
 		String res = null;
@@ -235,7 +253,7 @@ public class ByteUtils
 	 */
 	public static String byteArrayToString(byte[] b)
 	{
-		return byteArrayToString(b, "UTF-8");
+		return byteArrayToString(b, "GBK");
 	}
 
 	/**
