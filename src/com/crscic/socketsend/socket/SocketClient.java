@@ -8,7 +8,8 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import com.crscic.socketsend.SendDataFactory;
+
+import com.crscic.interfacetesttool.SendDataFactory;
 import com.crscic.socketsend.utils.ByteUtils;
 
 /**

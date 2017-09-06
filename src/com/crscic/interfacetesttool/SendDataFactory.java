@@ -1,4 +1,4 @@
-package com.crscic.socketsend;
+package com.crscic.interfacetesttool;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;

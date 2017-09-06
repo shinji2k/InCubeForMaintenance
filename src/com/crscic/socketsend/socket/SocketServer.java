@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import com.crscic.socketsend.SendDataFactory;
+import com.crscic.interfacetesttool.SendDataFactory;
 import com.crscic.socketsend.utils.ByteUtils;
 import com.crscic.socketsend.utils.StringUtils;
 
