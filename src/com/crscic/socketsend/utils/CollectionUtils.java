@@ -43,4 +43,44 @@ public class CollectionUtils
 			res[i] = b[i];
 		return res;
 	}
+
+	/**
+	 * 判断a、b两个数组是否相等。byte重载
+	 *
+	 * @param a
+	 * @param b
+	 * @return
+	 * @author zhaokai
+	 * @version 2017年5月11日 下午4:51:33
+	 */
+	public static Boolean isSameArray(byte[] a, byte[] b)
+	{
+		if (a.length != b.length)
+			return false;
+		for (int i = 0; i < a.length; i++)
+		{
+			if (a[i] != b[i]) 
+				return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * 在src截取[start,stop]的子数组,byte重载
+	 *
+	 * @param src
+	 * @param start
+	 * @param stop
+	 * @return
+	 * @author zhaokai
+	 * @version 2017年5月11日 下午5:25:56
+	 */
+	public static byte[] subArray(byte[] src, int start, int stop)
+	{
+		byte[] res = new byte[stop - start + 1];
+		int pos = start;
+		for (int i = 0; i < res.length; i++, pos++)
+			res[i] = src[pos];
+		return res;
+	}
 }

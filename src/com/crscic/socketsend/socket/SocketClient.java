@@ -20,17 +20,14 @@ public class SocketClient
 	private int port;
 	private Socket socket;
 	private boolean running = false;
-	private String configPath;
+	private SendDataFactory sdf;
 
-	public static void main(String[] args)
-	{
-	}
 
-	public SocketClient(String serverIp, int port, String configPath)
+	public SocketClient(SendDataFactory sdf)
 	{
-		this.serverIp = serverIp;
-		this.port = port;
-		this.configPath = configPath;
+		this.sdf = sdf;
+		this.serverIp = sdf.getSi().getIp();
+		this.port = Integer.parseInt(sdf.getSi().getPort());
 	}
 
 	public void start() throws UnknownHostException, IOException
@@ -40,7 +37,7 @@ public class SocketClient
 		socket = new Socket(serverIp, port);
 		System.out.println("本地端口：" + socket.getLocalPort());
 		running = true;
-		new Thread(new SendDataFactory(socket, this.configPath)).start(); // 监听返回信息
+		new Thread(sdf).start(); // 监听返回信息
 	}
 
 	public void stop()

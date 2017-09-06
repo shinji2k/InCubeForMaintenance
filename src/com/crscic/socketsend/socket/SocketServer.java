@@ -50,11 +50,12 @@ public class SocketServer
 	private int port;
 	private volatile boolean running = false;
 	private Thread connWatchDog;
-	private String configPath;
+	private SendDataFactory sdf;
 
-	public SocketServer(int port)
+	public SocketServer(SendDataFactory sdf)
 	{
-		this.port = port;
+		this.sdf = sdf;
+		this.port = Integer.parseInt(sdf.getSi().getPort());
 	}
 
 	public void start()
@@ -79,7 +80,7 @@ public class SocketServer
 	{
 		public void run()
 		{
-			if (StringUtils.isNullOrEmpty(configPath))
+			if (StringUtils.isNullOrEmpty(sdf.getConfigPath()))
 			{
 				try
 				{
@@ -98,8 +99,8 @@ public class SocketServer
 				while (running)
 				{
 					Socket s = ss.accept();
+					sdf.setSocket(s);
 					// 新起一个线程去处理收到的消息
-					SendDataFactory sdf = new SendDataFactory(s, configPath);
 					new Thread(sdf).start();
 				}
 			}
@@ -112,15 +113,5 @@ public class SocketServer
 				stop();
 			}
 		}
-	}
-
-	public String getConfigPath()
-	{
-		return configPath;
-	}
-
-	public void setConfigPath(String configPath)
-	{
-		this.configPath = configPath;
 	}
 }

@@ -8,7 +8,9 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -16,11 +18,14 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import com.crscic.socketsend.data.IntervalInfo;
+import com.crscic.socketsend.data.ResInfo;
+import com.crscic.socketsend.data.ResSetting;
 import com.crscic.socketsend.data.SocketInfo;
 import com.crscic.socketsend.exception.AppException;
 import com.crscic.socketsend.socket.SocketClient;
 import com.crscic.socketsend.socket.SocketServer;
 import com.crscic.socketsend.utils.ByteUtils;
+import com.crscic.socketsend.utils.CollectionUtils;
 import com.crscic.socketsend.utils.StringUtils;
 import com.crscic.socketsend.xmlhelper.XmlHelper;
 
@@ -34,6 +39,7 @@ public class SendDataFactory implements Runnable
 	private String proConfigPath;
 	private SocketInfo si;
 	private String configPath;
+	private List<ResSetting> responseList;
 
 	public SendDataFactory(Socket s, String configPath)
 	{
@@ -45,7 +51,6 @@ public class SendDataFactory implements Runnable
 	{
 		super();
 	}
-	
 
 	/**
 	 * 以Server的形式启动socket
@@ -60,11 +65,10 @@ public class SendDataFactory implements Runnable
 			System.out.println("Need init() first.");
 			return;
 		}
-		SocketServer ss = new SocketServer(Integer.parseInt(si.getPort()));
-		ss.setConfigPath(configPath);
+		SocketServer ss = new SocketServer(this);
 		ss.start();
 	}
-	
+
 	/**
 	 * 以client启动socket并自动连接，连接后监听从server返回的消息
 	 *
@@ -78,8 +82,8 @@ public class SendDataFactory implements Runnable
 			System.out.println("Need init() first.");
 			return;
 		}
-		
-		SocketClient sc = new SocketClient(si.getIp(), Integer.parseInt(si.getPort()), this.configPath);
+
+		SocketClient sc = new SocketClient(this);
 		try
 		{
 			sc.start();
@@ -169,6 +173,52 @@ public class SendDataFactory implements Runnable
 				intervalInfoList.add(ii);
 			}
 
+			// 初始化自动回复信息
+			List<Element> resNodeList = protocolNode.elements("response");
+			if (resNodeList.size() > 0)
+			{
+				responseList = new ArrayList<ResSetting>();
+				for (Element resNode : resNodeList)
+				{
+					ResSetting resSetting = new ResSetting();
+					String posString = XmlHelper.getNodeValue(resNode, "field");
+					String pos[] = posString.split(",");
+					resSetting.setPos(pos);
+					String valueString = XmlHelper.getNodeValue(resNode, "value");
+					String headString = XmlHelper.getNodeValue(resNode, "head");
+					String classString = XmlHelper.getNodeValue(resNode, "class");
+					if (classString.equals("byte"))
+					{
+						resSetting.setCommandType(valueString);
+						resSetting.setHead(headString);
+					}
+					else
+					{
+						resSetting.setCommandType(valueString.getBytes());
+						resSetting.setHead(headString.getBytes());
+					}
+					List<Element> quoteNodeList = resNode.elements("quote");
+					if (quoteNodeList.size() > 0)
+					{
+						for (Element quoteNode : quoteNodeList)
+						{
+							Element fieldNode = quoteNode.element("field");
+							String quotePosString = fieldNode.getTextTrim();
+							String quotePos[] = quotePosString.split(",");
+							String quoteNameString = fieldNode.attributeValue("name");
+							String quoteNames[] = quoteNameString.split(",");
+
+							Map<String, String[]> quoteMap = new HashMap<String, String[]>();
+							for (String quoteName : quoteNames)
+								quoteMap.put(quoteName, quotePos);
+							resSetting.setQuoteMap(quoteMap);
+							// TODO:rule
+							responseList.add(resSetting);
+						}
+					}
+				}
+			}
+
 		}
 		catch (DocumentException e)
 		{
@@ -181,30 +231,33 @@ public class SendDataFactory implements Runnable
 	}
 
 	/**
-	 * 获取发送的数据
+	 * 根据配置文件中的配置自适应以服务端或客户端启动socket
 	 *
 	 * @author zhaokai
-	 * @version 2017年2月13日 上午11:10:13
+	 * @version 2017年5月10日 上午11:13:05
 	 */
-	public byte[] getSendData(String protocolName)
+	public void startSocket()
 	{
-		byte[] b = null;
-		try
+		if (si == null)
 		{
-			b = xh.getDataByProtocol(protocolName);
-			// System.out.println(ByteUtils.byteArraytoHexString(b));
+			System.out.println("Call init() first please.");
+			return;
 		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-		return b;
+
+		if (si.getType().equals("client"))
+			this.startSocketClient();
+		else
+			this.startSocketServer();
 	}
 
+
+	/**
+	 * 远程线程调用。处理接收的消息
+	 */
 	public void run()
 	{
 		xh = new XmlHelper(proConfigPath);
-		System.out.println("client : " + s.getRemoteSocketAddress());
+		System.out.println("recv : " + s.getRemoteSocketAddress());
 		while (run)
 		{
 			try
@@ -215,7 +268,7 @@ public class SendDataFactory implements Runnable
 					if ((System.currentTimeMillis() - ii.getLastSendTimeMillis()) > ii.getIntervalMillis())
 					{
 						System.out.println("get " + ii.getProtocolName() + " data.");
-						byte b[] = xh.getDataByProtocol(ii.getProtocolName());
+						byte b[] = xh.getDataByProtocol(ii.getProtocolName(), null);
 						System.out.println("==========================================");
 						System.out.println("send : " + ByteUtils.byteArrayToString(b));
 						System.out.println("send : " + ByteUtils.byteArraytoHexString(b));
@@ -241,8 +294,25 @@ public class SendDataFactory implements Runnable
 					int dataLen = dis.available();
 					byte[] bytes = new byte[dataLen]; // 一次性读取
 					dis.readFully(bytes);
-					System.out.println("get in hex : " + ByteUtils.byteArraytoHexString(bytes));
-					System.out.println("get in asc : " + ByteUtils.byteArrayToString(bytes));
+					System.out.println("get : " + ByteUtils.byteArraytoHexString(bytes));
+					System.out.println("get : " + ByteUtils.byteArrayToString(bytes));
+					// TODO:here：获取对应的协议并生成协议数据发送
+					ResInfo ri = getResponseProtocol(bytes);
+					if (ri != null)
+					{
+						byte[] data = xh.getDataByProtocol(ri.getProtocol(), ri.getQuoteMap());
+						OutputStream os = s.getOutputStream();
+						if (s.isConnected())
+						{
+							os.write(data);
+							os.flush();
+						}
+						else
+						{
+							run = false;
+						}
+					}
+
 				}
 				else
 				{
@@ -257,9 +327,81 @@ public class SendDataFactory implements Runnable
 		}
 	}
 
+	private ResInfo getResponseProtocol(byte[] reqs)
+	{
+		// TODO:获得返回的协议名，查看是否有需要引用的数据。并且将需要引用的字段传给XMLHelper获得返回数据
+		for (ResSetting rs : responseList)
+		{
+			// 切出报文
+			byte[] req = getSingleReqest(reqs, rs.getHead());
+			if (req == null) // 若本次获取的报文中不包含head，则认为本次获取的报文不是完整报文，整条舍弃
+				continue;
+			// 从请求中获取请求的类型
+			byte[] reqCmdType = CollectionUtils.subArray(req, rs.getStartPos(), rs.getStopPos());
+			// 将请求的类型进行匹配
+			byte[] cmdType = rs.getCommandType();
+			if (!CollectionUtils.isSameArray(reqCmdType, cmdType))
+				continue;
+			// 获取回复的协议名
+			ResInfo ri = new ResInfo();
+			ri.setProtocol(rs.getResProtocol());
+			// 设置引用字段的值
+			Map<String, int[]> quotePosMap = rs.getQuoteMap();
+			Map<String, byte[]> quoteValueMap = new HashMap<String, byte[]>();
+			for (String key : quotePosMap.keySet())
+			{
+				int[] quotePos = quotePosMap.get(key);
+				byte[] quoteValue = CollectionUtils.subArray(req, quotePos[0], quotePos[1]);
+				quoteValueMap.put(key, quoteValue);
+			}
+			ri.setQuoteMap(quoteValueMap);
+			return ri;
+		}
+		return null;
+	}
+
+	/**
+	 * 从reqs中根据标识head，截取包含head在内的往后的部分。 若不包含则返回null 从未知条数的数据中根据头信息获取一条报文。
+	 * 
+	 * @param reqs
+	 * @param head
+	 * @return
+	 * @author zhaokai
+	 * @version 2017年5月11日 下午4:37:50
+	 */
+	private byte[] getSingleReqest(byte[] reqs, byte[] head)
+	{
+		boolean flag = false;
+		byte[] req = null;
+		for (int i = 0; i < reqs.length; i++)
+		{
+			if (i + head.length > reqs.length)
+				break;
+			for (int j = 0; j < head.length; j++)
+			{
+				if (head[j] == reqs[i + j])
+				{
+					flag = true;
+				}
+				else
+				{
+					flag = false;
+					break;
+				}
+			}
+			if (flag)
+			{
+				req = new byte[reqs.length - i];
+				for (int j = 0; j < req.length; j++)
+					req[j] = reqs[i + j];
+				break;
+			}
+		}
+		return req;
+	}
+
 	/**
 	 * 关闭连接
-	 * 
 	 */
 	private void overThis()
 	{
@@ -283,9 +425,34 @@ public class SendDataFactory implements Runnable
 	{
 		SendDataFactory sdf = new SendDataFactory();
 		sdf.init("config/config.xml");
-		sdf.startSocketClient();
-//		sdf.startSocketServer();
+		sdf.startSocket();
+		// sdf.startSocketServer();
 		// String hexString = "ffffffff";
 		// System.out.println(ByteUtils.byteArraytoHexString(ByteUtils.hexStringToBytes(hexString)));
+	}
+
+	public SocketInfo getSi()
+	{
+		return si;
+	}
+
+	public void setSi(SocketInfo si)
+	{
+		this.si = si;
+	}
+
+	public String getConfigPath()
+	{
+		return configPath;
+	}
+
+	public void setConfigPath(String configPath)
+	{
+		this.configPath = configPath;
+	}
+
+	public void setSocket(Socket s)
+	{
+		this.s = s;
 	}
 }

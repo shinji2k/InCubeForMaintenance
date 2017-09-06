@@ -31,6 +31,7 @@ public class XmlHelper
 	private int fileRandomMem = 0;
 	private int fileLength = 0;
 	private List<PartMem> partMem; // 缓存需要补完的字段信息
+	private Map<String, byte[]> quoteMap;	//缓存需要从请求中引用数据的字段和使用的数据
 
 	public XmlHelper()
 	{
@@ -75,13 +76,15 @@ public class XmlHelper
 	 * @version 2017年2月13日 下午6:11:30
 	 */
 	@SuppressWarnings("unchecked")
-	public byte[] getDataByProtocol(String protocolName) throws AppException
+	public byte[] getDataByProtocol(String protocolName, Map<String, byte[]> quoteMap) throws AppException
 	{
 		// 根据协议初始化顺序读文件时的缓存
 		if (proFileOrderMem.containsKey(protocolName))
 			fileOrderMem = proFileOrderMem.get(protocolName);
 		else
 			fileOrderMem = 1;
+		this.quoteMap = quoteMap;
+		
 		// 初始化Xml对象
 		if (xmlDocument == null)
 			throw new AppException("Xml文档加载失败或未加载");
@@ -308,10 +311,29 @@ public class XmlHelper
 			b = getRandomData(part);
 		else if (typeString.equals("check")) // 校验码
 			setPartMem(part);
+		else if (typeString.equals("quote"))	//引用请求中的字段
+			b = getQuoteData(part);
 		else
 			throw AppException.nodeErr(part, "type");
 		return b;
 
+	}
+
+	/**
+	 * 针对需要从请求中获取数据的字段，从成员中获取数据并返回
+	 *
+	 * @return
+	 * @author zhaokai
+	 * @version 2017年5月12日 下午4:17:14
+	 */
+	private byte[] getQuoteData(Element part)
+	{
+		String attr_name = part.attributeValue("name");
+		if (this.quoteMap.containsKey(attr_name))
+		{
+			return this.quoteMap.get(attr_name);
+		}
+		return null;
 	}
 
 	/**
@@ -740,7 +762,7 @@ public class XmlHelper
 	 * @return
 	 * @throws AppException
 	 */
-	private String getNodeValue(Element parent, String nodeName) throws AppException
+	public static String getNodeValue(Element parent, String nodeName) throws AppException
 	{
 		Element node = parent.element(nodeName);
 		if (null == node)
