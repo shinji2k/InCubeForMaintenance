@@ -1,4 +1,4 @@
-package com.crscic.socketsend.xmlhelper;
+package com.crscic.interfacetesttool.xmlhelper;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -15,12 +15,13 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
-import com.crscic.socketsend.data.PartMem;
-import com.crscic.socketsend.exception.AppException;
-import com.crscic.socketsend.filehelper.FileHelper;
-import com.crscic.socketsend.utils.ByteUtils;
-import com.crscic.socketsend.utils.CollectionUtils;
-import com.crscic.socketsend.utils.StringUtils;
+import com.crscic.interfacetesttool.data.PartMem;
+import com.crscic.interfacetesttool.exception.AppException;
+import com.crscic.interfacetesttool.filehelper.FileHelper;
+import com.crscic.interfacetesttool.utils.ByteUtils;
+import com.crscic.interfacetesttool.utils.CollectionUtils;
+import com.crscic.interfacetesttool.utils.StringUtils;
+
 
 public class XmlHelper
 {

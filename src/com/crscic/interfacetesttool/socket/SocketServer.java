@@ -1,4 +1,4 @@
-package com.crscic.socketsend.socket;
+package com.crscic.interfacetesttool.socket;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -8,8 +8,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import com.crscic.interfacetesttool.SendDataFactory;
-import com.crscic.socketsend.utils.ByteUtils;
-import com.crscic.socketsend.utils.StringUtils;
+import com.crscic.interfacetesttool.utils.ByteUtils;
+import com.crscic.interfacetesttool.utils.StringUtils;
 
 /**
  * C/S架构的服务端对象。

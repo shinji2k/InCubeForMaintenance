@@ -1,4 +1,4 @@
-package com.crscic.socketsend.socket;
+package com.crscic.interfacetesttool.socket;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -10,7 +10,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import com.crscic.interfacetesttool.SendDataFactory;
-import com.crscic.socketsend.utils.ByteUtils;
+import com.crscic.interfacetesttool.utils.ByteUtils;
 
 /**
  * C/S架构的客户端对象，持有该对象，可以随时向服务端发送消息。

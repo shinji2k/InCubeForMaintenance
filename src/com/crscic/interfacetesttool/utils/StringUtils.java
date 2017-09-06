@@ -1,4 +1,4 @@
-package com.crscic.socketsend.utils;
+package com.crscic.interfacetesttool.utils;
 
 public class StringUtils
 {

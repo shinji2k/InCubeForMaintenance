@@ -1,7 +1,7 @@
 /**
  * byte类型相关工具类
  */
-package com.crscic.socketsend.utils;
+package com.crscic.interfacetesttool.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;

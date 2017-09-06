@@ -1,10 +1,11 @@
-package com.crscic.socketsend.data;
+package com.crscic.interfacetesttool.data;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.crscic.socketsend.utils.ByteUtils;
+import com.crscic.interfacetesttool.utils.ByteUtils;
+
 
 public class ResSetting
 {

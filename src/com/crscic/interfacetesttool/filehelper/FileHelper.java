@@ -1,4 +1,4 @@
-package com.crscic.socketsend.filehelper;
+package com.crscic.interfacetesttool.filehelper;
 
 import java.io.BufferedReader;
 import java.io.File;

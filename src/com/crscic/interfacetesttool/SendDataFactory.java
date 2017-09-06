@@ -17,17 +17,18 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
-import com.crscic.socketsend.data.IntervalInfo;
-import com.crscic.socketsend.data.ResInfo;
-import com.crscic.socketsend.data.ResSetting;
-import com.crscic.socketsend.data.SocketInfo;
-import com.crscic.socketsend.exception.AppException;
-import com.crscic.socketsend.socket.SocketClient;
-import com.crscic.socketsend.socket.SocketServer;
-import com.crscic.socketsend.utils.ByteUtils;
-import com.crscic.socketsend.utils.CollectionUtils;
-import com.crscic.socketsend.utils.StringUtils;
-import com.crscic.socketsend.xmlhelper.XmlHelper;
+import com.crscic.interfacetesttool.data.IntervalInfo;
+import com.crscic.interfacetesttool.data.ResInfo;
+import com.crscic.interfacetesttool.data.ResSetting;
+import com.crscic.interfacetesttool.data.SocketInfo;
+import com.crscic.interfacetesttool.exception.AppException;
+import com.crscic.interfacetesttool.socket.SocketClient;
+import com.crscic.interfacetesttool.socket.SocketServer;
+import com.crscic.interfacetesttool.utils.ByteUtils;
+import com.crscic.interfacetesttool.utils.CollectionUtils;
+import com.crscic.interfacetesttool.utils.StringUtils;
+import com.crscic.interfacetesttool.xmlhelper.XmlHelper;
+
 
 public class SendDataFactory implements Runnable
 {

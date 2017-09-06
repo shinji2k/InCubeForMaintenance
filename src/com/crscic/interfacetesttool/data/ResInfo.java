@@ -1,4 +1,4 @@
-package com.crscic.socketsend.data;
+package com.crscic.interfacetesttool.data;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package com.crscic.socketsend.exception;
+package com.crscic.interfacetesttool.exception;
 
 import org.dom4j.Element;
 
