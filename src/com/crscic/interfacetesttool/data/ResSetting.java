@@ -4,8 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.crscic.interfacetesttool.utils.ByteUtils;
-
+import com.k.util.ByteUtils;
 
 public class ResSetting
 {

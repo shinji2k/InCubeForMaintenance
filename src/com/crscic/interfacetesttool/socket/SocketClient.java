@@ -9,8 +9,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import com.crscic.interfacetesttool.SendDataFactory;
-import com.crscic.interfacetesttool.utils.ByteUtils;
+import com.crscic.interfacetesttool.DataFactory;
+import com.k.util.ByteUtils;
 
 /**
  * C/S架构的客户端对象，持有该对象，可以随时向服务端发送消息。
@@ -21,10 +21,15 @@ public class SocketClient
 	private int port;
 	private Socket socket;
 	private boolean running = false;
-	private SendDataFactory sdf;
+	private DataFactory sdf;
 
+	public SocketClient(String serverIp, String serverPort)
+	{
+		this.serverIp = serverIp;
+		this.port = Integer.parseInt(serverPort);
+	}
 
-	public SocketClient(SendDataFactory sdf)
+	public SocketClient(DataFactory sdf)
 	{
 		this.sdf = sdf;
 		this.serverIp = sdf.getSi().getIp();

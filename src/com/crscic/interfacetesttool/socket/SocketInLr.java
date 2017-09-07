@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import com.crscic.interfacetesttool.SendDataFactory;
+import com.crscic.interfacetesttool.DataFactory;
 
 public class SocketInLr
 {
@@ -16,7 +16,7 @@ public class SocketInLr
 		while(flag)
 		{
 			Socket s = server.accept();
-			SendDataFactory sdf = new SendDataFactory(s, "D:\\WorkSpace\\Java\\Eclipse\\SocketSend\\config\\config.xml");
+			DataFactory sdf = new DataFactory(s, "D:\\WorkSpace\\Java\\Eclipse\\SocketSend\\config\\config.xml");
 			sdf.run();
 		}
 	}

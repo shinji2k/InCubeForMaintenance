@@ -17,20 +17,28 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
+import com.crscic.interfacetesttool.connector.ComConnector;
+import com.crscic.interfacetesttool.connector.Connector;
+import com.crscic.interfacetesttool.connector.SocketConnector;
 import com.crscic.interfacetesttool.data.IntervalInfo;
 import com.crscic.interfacetesttool.data.ResInfo;
 import com.crscic.interfacetesttool.data.ResSetting;
 import com.crscic.interfacetesttool.data.SocketInfo;
+import com.crscic.interfacetesttool.entity.ComConfig;
+import com.crscic.interfacetesttool.entity.IConfig;
+import com.crscic.interfacetesttool.entity.InterfaceType;
+import com.crscic.interfacetesttool.entity.SocketConfig;
 import com.crscic.interfacetesttool.exception.AppException;
+import com.crscic.interfacetesttool.log.Log;
 import com.crscic.interfacetesttool.socket.SocketClient;
 import com.crscic.interfacetesttool.socket.SocketServer;
-import com.crscic.interfacetesttool.utils.ByteUtils;
-import com.crscic.interfacetesttool.utils.CollectionUtils;
-import com.crscic.interfacetesttool.utils.StringUtils;
 import com.crscic.interfacetesttool.xmlhelper.XmlHelper;
+import com.k.util.ByteUtils;
+import com.k.util.CollectionUtils;
+import com.k.util.StringUtils;
 
 
-public class SendDataFactory implements Runnable
+public class DataFactory implements Runnable
 {
 
 	private Socket s;
@@ -41,14 +49,54 @@ public class SendDataFactory implements Runnable
 	private SocketInfo si;
 	private String configPath;
 	private List<ResSetting> responseList;
-
-	public SendDataFactory(Socket s, String configPath)
+	/*******************************************************************/
+	private Connector connector;
+	
+	public DataFactory(String configPath) throws DocumentException
+	{
+		//TODO:读取配置文件，并打印配置信息
+		XmlHelper configXml = new XmlHelper();
+		Log.info("读取配置文件：" + configPath);
+		configXml.loadXml(configPath);
+		
+		Element configNode = configXml.getSingleElement("//config");
+		InterfaceType interfaceType = configXml.fill(configNode, InterfaceType.class);
+		Log.info("接口类型为：" + interfaceType.getType());
+		setConnector(interfaceType.getType(), configXml);
+//		Element root = xmlDocument.getRootElement();
+		//TODO:根据配置文件决定使用TCP还是COM
+		
+//		intervalInfoList = new ArrayList<IntervalInfo>();
+	}
+	
+	public void setConnector(String connectorType, XmlHelper configXml)
+	{
+		Log.info("初始化接口...");
+		Element connectorNode = null;
+		IConfig connectConfig = null;
+		if (connectorType.toLowerCase().equals("socket"))
+		{
+			
+			connectorNode = configXml.getSingleElement("/root/socket");
+			SocketConfig sockCfg = configXml.fill(connectorNode, SocketConfig.class);
+			connector = new SocketConnector(sockCfg);
+		}
+		else if (connectorType.toLowerCase().equals("com"))
+		{
+			connectorNode = configXml.getSingleElement("/root/com");
+			ComConfig comCfg = configXml.fill(connectorNode, ComConfig.class);
+			connector = new ComConnector();
+		}
+		
+	}
+/****************************************************************/
+	public DataFactory(Socket s, String configPath)
 	{
 		this.s = s;
 		init(configPath);
 	}
 
-	public SendDataFactory()
+	public DataFactory()
 	{
 		super();
 	}
@@ -422,9 +470,9 @@ public class SendDataFactory implements Runnable
 		System.out.println("关闭：" + s.getRemoteSocketAddress());
 	}
 
-	public static void main(String[] args)
+	public static void main2(String[] args)
 	{
-		SendDataFactory sdf = new SendDataFactory();
+		DataFactory sdf = new DataFactory();
 		sdf.init("config/config.xml");
 		sdf.startSocket();
 		// sdf.startSocketServer();

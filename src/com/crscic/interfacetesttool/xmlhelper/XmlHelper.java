@@ -1,6 +1,8 @@
 package com.crscic.interfacetesttool.xmlhelper;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,11 +19,11 @@ import org.dom4j.io.SAXReader;
 
 import com.crscic.interfacetesttool.data.PartMem;
 import com.crscic.interfacetesttool.exception.AppException;
-import com.crscic.interfacetesttool.filehelper.FileHelper;
-import com.crscic.interfacetesttool.utils.ByteUtils;
-import com.crscic.interfacetesttool.utils.CollectionUtils;
-import com.crscic.interfacetesttool.utils.StringUtils;
-
+import com.k.reflect.ReflectUtils;
+import com.k.util.ByteUtils;
+import com.k.util.CollectionUtils;
+import com.k.util.StringUtils;
+import com.k.util.filehelper.FileHelper;
 
 public class XmlHelper
 {
@@ -32,8 +34,64 @@ public class XmlHelper
 	private int fileRandomMem = 0;
 	private int fileLength = 0;
 	private List<PartMem> partMem; // 缓存需要补完的字段信息
-	private Map<String, byte[]> quoteMap;	//缓存需要从请求中引用数据的字段和使用的数据
+	private Map<String, byte[]> quoteMap; // 缓存需要从请求中引用数据的字段和使用的数据
+	
+	public void loadXml(String xmlPath) throws DocumentException
+	{
+		saxReader = new SAXReader();
+		xmlDocument = saxReader.read(xmlPath);
+	}
+	
+	public Element getSingleElement(String xpath)
+	{
+		if (StringUtils.isNullOrEmpty(xpath))
+			return null;
+		return (Element) xmlDocument.selectSingleNode(xpath);
+	}
 
+	/**
+	 * 将xml某节点下所有子节点自动填装。 要求：该节点下只有一级子节点，且填装类的属性与节点名称一致。 注意：暂不支持属性的填装
+	 * 
+	 * @param filePath
+	 * @param t
+	 * @return zhaokai 2017年9月6日 下午6:33:25
+	 */
+	public <T> T fill(Element element, Class<T> t)
+	{
+		T ret = null;
+		Method[] methods = t.getDeclaredMethods();
+		try
+		{
+			ret = t.newInstance();
+			@SuppressWarnings("unchecked")
+			List<Element> nodeList = element.elements();
+
+			for (Element node : nodeList)
+			{
+				Method setMethod = ReflectUtils.getSetMethod(methods, node.getName());
+				setMethod.invoke(ret, node.getTextTrim());
+			}
+		}
+		catch (IllegalAccessException e)
+		{
+			e.printStackTrace();
+		}
+		catch (IllegalArgumentException e)
+		{
+ 			e.printStackTrace();
+		}
+		catch (InvocationTargetException e)
+		{
+			e.printStackTrace();
+		}
+		catch (InstantiationException e)
+		{
+			e.printStackTrace();
+		}
+		return ret;
+	}
+
+	/***************************************************************/
 	public XmlHelper()
 	{
 		super();
@@ -85,7 +143,7 @@ public class XmlHelper
 		else
 			fileOrderMem = 1;
 		this.quoteMap = quoteMap;
-		
+
 		// 初始化Xml对象
 		if (xmlDocument == null)
 			throw new AppException("Xml文档加载失败或未加载");
@@ -255,8 +313,7 @@ public class XmlHelper
 		byte xor = 0;
 		for (int i = 0; i < data.size(); i++)
 			xor ^= data.get(i);
-		return new byte[]
-		{ xor };
+		return new byte[] { xor };
 	}
 
 	/**
@@ -312,7 +369,7 @@ public class XmlHelper
 			b = getRandomData(part);
 		else if (typeString.equals("check")) // 校验码
 			setPartMem(part);
-		else if (typeString.equals("quote"))	//引用请求中的字段
+		else if (typeString.equals("quote")) // 引用请求中的字段
 			b = getQuoteData(part);
 		else
 			throw AppException.nodeErr(part, "type");
@@ -741,8 +798,8 @@ public class XmlHelper
 			else if (classString.equals("float"))
 			{
 				Float f = new Float(Float.parseFloat(src) * 100);
-				//按照铁标只需要float乘以100发送，不需要转int
-//				b = ByteUtils.getBytes(f);
+				// 按照铁标只需要float乘以100发送，不需要转int
+				// b = ByteUtils.getBytes(f);
 				b = ByteUtils.getBytes(f.intValue());
 			}
 			else

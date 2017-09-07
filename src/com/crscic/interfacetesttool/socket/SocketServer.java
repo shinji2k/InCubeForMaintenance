@@ -7,9 +7,9 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import com.crscic.interfacetesttool.SendDataFactory;
-import com.crscic.interfacetesttool.utils.ByteUtils;
-import com.crscic.interfacetesttool.utils.StringUtils;
+import com.crscic.interfacetesttool.DataFactory;
+import com.k.util.ByteUtils;
+import com.k.util.StringUtils;
 
 /**
  * C/S架构的服务端对象。
@@ -50,9 +50,9 @@ public class SocketServer
 	private int port;
 	private volatile boolean running = false;
 	private Thread connWatchDog;
-	private SendDataFactory sdf;
+	private DataFactory sdf;
 
-	public SocketServer(SendDataFactory sdf)
+	public SocketServer(DataFactory sdf)
 	{
 		this.sdf = sdf;
 		this.port = Integer.parseInt(sdf.getSi().getPort());
