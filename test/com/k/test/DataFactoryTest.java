@@ -7,6 +7,7 @@ import org.dom4j.DocumentException;
 import org.junit.Test;
 
 import com.crscic.interfacetesttool.DataFactory;
+import com.crscic.interfacetesttool.log.Log;
 
 /**
  * 
@@ -27,5 +28,11 @@ public class DataFactoryTest
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void LogTest()
+	{
+		Log.info("test log");
 	}
 }

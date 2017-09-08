@@ -3,6 +3,8 @@
  */
 package com.crscic.interfacetesttool.log;
 
+import java.text.SimpleDateFormat;
+
 /**
  * 
  * @author zhaokai
@@ -12,6 +14,8 @@ public class Log
 {
 	public static void info(String log)
 	{
-		System.out.println(log);
+		SimpleDateFormat date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currTime = date.format(System.currentTimeMillis());
+		System.out.println(currTime + " INFO " + log);
 	}
 }

@@ -31,4 +31,14 @@ public class ComConnector implements Connector
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see com.crscic.interfacetesttool.connector.Connector#connect()
+	 */
+	@Override
+	public void connect()
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
 }

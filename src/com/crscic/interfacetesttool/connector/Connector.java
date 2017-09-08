@@ -12,4 +12,5 @@ public interface Connector
 {
 	public void start();
 	public void startReply();
+	public void connect();
 }

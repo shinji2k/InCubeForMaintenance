@@ -17,6 +17,7 @@ public class SocketConnector implements Connector
 	private String ip;
 	private int port;
 	private boolean keepAlive;
+	
 	private SocketClient client;
 	private SocketServer server;
 	
@@ -34,14 +35,7 @@ public class SocketConnector implements Connector
 	@Override
 	public void start()
 	{
-		if (type.toLowerCase().equals("client"))
-		{
-			client = new SocketClient(this.ip, this.port, keepAlive);
-		}
-		else
-		{
-			server = new SocketServer(this.port);
-		}
+		
 	}
 
 	/* (non-Javadoc)
@@ -52,5 +46,21 @@ public class SocketConnector implements Connector
 	{
 		// TODO Auto-generated method stub
 		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.crscic.interfacetesttool.connector.Connector#connect()
+	 */
+	@Override
+	public void connect()
+	{
+		if (type.toLowerCase().equals("client"))
+		{
+			client = new SocketClient(this.ip, this.port, keepAlive);
+		}
+		else
+		{
+			server = new SocketServer(this.port, keepAlive);
+		}
 	}
 }
