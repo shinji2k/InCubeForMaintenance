@@ -7,6 +7,7 @@ import org.dom4j.DocumentException;
 import org.junit.Test;
 
 import com.crscic.interfacetesttool.DataFactory;
+import com.crscic.interfacetesttool.connector.Connector;
 import com.crscic.interfacetesttool.log.Log;
 
 /**
@@ -22,6 +23,7 @@ public class DataFactoryTest
 		try
 		{
 			DataFactory df = new DataFactory("config/config.xml");
+			Connector conn = df.getConnector();
 			
 		}
 		catch (DocumentException e)

@@ -69,16 +69,20 @@ public class DataFactory implements Runnable
 //		intervalInfoList = new ArrayList<IntervalInfo>();
 	}
 	
-	public void setConnector(String connectorType, XmlHelper configXml)
+	public Connector getConnector()
+	{
+		return connector;
+	}
+	
+	private void setConnector(String connectorType, XmlHelper configXml)
 	{
 		Log.info("初始化接口...");
 		Element connectorNode = null;
-		IConfig connectConfig = null;
 		if (connectorType.toLowerCase().equals("socket"))
 		{
-			
 			connectorNode = configXml.getSingleElement("/root/socket");
 			SocketConfig sockCfg = configXml.fill(connectorNode, SocketConfig.class);
+			Log.info("接口类型为Socket-" + sockCfg.getType() + ",");
 			connector = new SocketConnector(sockCfg);
 		}
 		else if (connectorType.toLowerCase().equals("com"))
@@ -87,7 +91,6 @@ public class DataFactory implements Runnable
 			ComConfig comCfg = configXml.fill(connectorNode, ComConfig.class);
 			connector = new ComConnector();
 		}
-		
 	}
 /****************************************************************/
 	public DataFactory(Socket s, String configPath)

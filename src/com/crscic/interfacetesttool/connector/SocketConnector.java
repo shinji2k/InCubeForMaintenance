@@ -3,6 +3,10 @@
  */
 package com.crscic.interfacetesttool.connector;
 
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
 import com.crscic.interfacetesttool.entity.SocketConfig;
 import com.k.socket.SocketClient;
 import com.k.socket.SocketServer;
@@ -18,8 +22,7 @@ public class SocketConnector implements Connector
 	private int port;
 	private boolean keepAlive;
 	
-	private SocketClient client;
-	private SocketServer server;
+	private Socket connect;
 	
 	public SocketConnector(SocketConfig sockCfg)
 	{
@@ -52,15 +55,15 @@ public class SocketConnector implements Connector
 	 * @see com.crscic.interfacetesttool.connector.Connector#connect()
 	 */
 	@Override
-	public void connect()
+	public void connect() throws UnknownHostException, IOException
 	{
 		if (type.toLowerCase().equals("client"))
 		{
-			client = new SocketClient(this.ip, this.port, keepAlive);
+			connect = new Socket(ip, port);
 		}
 		else
 		{
-			server = new SocketServer(this.port, keepAlive);
+			SocketServer server = new SocketServer(this.port, keepAlive);
 		}
 	}
 }
