@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import com.crscic.interfacetesttool.entity.SocketConfig;
+import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.log.Log;
 
 /**
@@ -22,23 +23,23 @@ public class SocketConnector implements Connector
 	private String ip;
 	private int port;
 	private boolean keepAlive;
-	
+
 	private Socket connector;
 	private ServerSocket server;
-	
+
 	public SocketConnector(SocketConfig sockCfg)
 	{
 		this.type = sockCfg.getType();
 		this.ip = sockCfg.getIp();
 		this.port = Integer.parseInt(sockCfg.getPort());
 		this.keepAlive = sockCfg.getKeepAlive();
-		
+
 		String logInfo;
 		if (this.type.equals("server"))
 			logInfo = "监听端口：" + this.port + ", 连接方式：" + (this.keepAlive ? "长连接" : "短连接");
 		else
 			logInfo = "服务器IP：" + this.ip + ", 服务器端口：" + this.port + ", 连接方式：" + (this.keepAlive ? "长连接" : "短连接");
-		
+
 		Log.info("接口类型为Socket-" + this.type + ", " + logInfo);
 	}
 
@@ -47,10 +48,10 @@ public class SocketConnector implements Connector
 	{
 		if (connector == null)
 		{
-			
+
 		}
 	}
-	
+
 	public void sendString(String str) throws IOException
 	{
 		OutputStream os = connector.getOutputStream();
@@ -59,30 +60,73 @@ public class SocketConnector implements Connector
 		os.flush();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.crscic.interfacetesttool.connector.Connector#startReply()
 	 */
 	@Override
 	public void startReply()
 	{
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/**
 	 * 连接Socket实现
 	 */
 	@Override
-	public void connect() throws UnknownHostException, IOException
+	public void openConnect() throws ConnectException
 	{
-		if (type.toLowerCase().equals("client"))
+		try
 		{
-			connector = new Socket(ip, port);
+			if (type.toLowerCase().equals("client"))
+			{
+				connector = new Socket(ip, port);
+			}
+			else
+			{
+				server = new ServerSocket(port, 5);
+				connector = server.accept(); // 不确定当离开这个方法后，server会不会销毁
+			}
 		}
-		else
+		catch (UnknownHostException e)
 		{
-			server = new ServerSocket(port, 5);
-			connector = server.accept();	//不确定当离开这个方法后，server会不会销毁
+			Log.error("错误的主机地址", e);
+			throw new ConnectException();
 		}
+		catch (IOException e)
+		{
+			Log.error("接口打开失败", e);
+			throw new ConnectException();
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.crscic.interfacetesttool.connector.Connector#closeConnect()
+	 */
+	@Override
+	public void closeConnect() throws ConnectException
+	{
+		try
+		{
+			if (connector != null)
+				connector.close();
+			if (server != null)
+				server.close();
+			if (keepAlive)
+			{
+				//如果是长连接的话，那么输入输出流应该是打开状态的，是否需要关闭一下呢？
+			}
+				
+		}
+		catch (IOException e)
+		{
+			Log.error("接口关闭失败", e);
+			throw new ConnectException();
+		}
+
 	}
 }

@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.TooManyListenersException;
 
 import com.crscic.interfacetesttool.entity.ComConfig;
+import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.log.Log;
 
 import gnu.io.CommPort;
@@ -32,6 +33,7 @@ public class ComConnector implements Connector
 	private String databit;
 	private String parity;
 	private String stopbit;
+	private SerialPort serialPort;
 
 	public ComConnector(ComConfig comCfg)
 	{
@@ -66,17 +68,70 @@ public class ComConnector implements Connector
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.crscic.interfacetesttool.connector.Connector#connect()
-	 */
 	@Override
-	public void connect()
+	public void openConnect()
 	{
-		// SerialPort com = new
 		Log.info("接口类型为串口，串口号：" + this.port + "，波特率：" + this.baudrate + "，数据位：" + this.databit + "，停止位：" + this.stopbit
 				+ "，校验位：" + this.parity);
+		try
+		{
+			// 通过端口名识别端口
+			CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(this.port);
+
+			Log.info("打开端口...");
+			// 打开端口，并给端口名字和一个timeout（打开操作的超时时间）
+			CommPort commPort = portIdentifier.open(this.port, 2000);
+			Log.info("端口打开成功");
+			
+			// 判断是不是串口
+			if (commPort instanceof SerialPort)
+			{
+
+				serialPort = (SerialPort) commPort;
+
+				try
+				{
+					// 设置一下串口的波特率等参数
+					//SerialPort.DATABITS_8
+					//SerialPort.STOPBITS_1
+					serialPort.setSerialPortParams(Integer.parseInt(this.baudrate), 
+							Integer.parseInt(this.databit),
+							Integer.parseInt(this.stopbit),
+							getParity());
+				}
+				catch (UnsupportedCommOperationException e)
+				{
+					Log.error("端口打开失败", e);
+				}
+			}
+			else
+			{
+				// 不是串口
+				Log.error("该端口号不是串口");
+			}
+		}
+		catch (NoSuchPortException e1)
+		{
+			Log.error("该端口不存在", e1);
+		}
+		catch (PortInUseException e2)
+		{
+			Log.error("端口被占用", e2);
+		}
+	}
+	
+	private int getParity()
+	{
+		int ret = SerialPort.PARITY_NONE;
+		if (this.parity.equals("even"))
+			ret = SerialPort.PARITY_EVEN;
+		else if (this.parity.equals("odd"))
+			ret = SerialPort.PARITY_ODD;
+		else if (this.parity.equals("space"))
+			ret = SerialPort.PARITY_SPACE;
+		else if (this.parity.equals("mark"))
+			ret = SerialPort.PARITY_MARK;
+		return ret;
 	}
 
 	/**
@@ -84,105 +139,23 @@ public class ComConnector implements Connector
 	 * 
 	 * @return 可用端口名称列表
 	 */
-	public static final ArrayList<String> findPort()
+	public static final ArrayList<String> listPort()
 	{
 
 		// 获得当前所有可用串口
-		Enumeration<CommPortIdentifier> portList = CommPortIdentifier.getPortIdentifiers();
+		Enumeration<?> portList = CommPortIdentifier.getPortIdentifiers();
 
 		ArrayList<String> portNameList = new ArrayList<String>();
 
 		// 将可用串口名添加到List并返回该List
 		while (portList.hasMoreElements())
 		{
-			String portName = portList.nextElement().getName();
+			String portName = ((CommPortIdentifier) portList.nextElement()).getName();
 			portNameList.add(portName);
 		}
 
 		return portNameList;
 
-	}
-
-	/**
-	 * 打开串口
-	 * 
-	 * @param portName
-	 *            端口名称
-	 * @param baudrate
-	 *            波特率
-	 * @return 串口对象
-	 * @throws Exception
-	 * @throws SerialPortParameterFailure
-	 *             设置串口参数失败
-	 * @throws NotASerialPort
-	 *             端口指向设备不是串口类型
-	 * @throws NoSuchPort
-	 *             没有该端口对应的串口设备
-	 * @throws PortInUse
-	 *             端口已被占用
-	 */
-	public static final SerialPort openPort(String portName, int baudrate) throws Exception
-	{
-
-		try
-		{
-
-			// 通过端口名识别端口
-			CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
-
-			// 打开端口，并给端口名字和一个timeout（打开操作的超时时间）
-			CommPort commPort = portIdentifier.open(portName, 2000);
-
-			// 判断是不是串口
-			if (commPort instanceof SerialPort)
-			{
-
-				SerialPort serialPort = (SerialPort) commPort;
-
-				try
-				{
-					// 设置一下串口的波特率等参数
-					serialPort.setSerialPortParams(baudrate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
-							SerialPort.PARITY_NONE);
-				}
-				catch (UnsupportedCommOperationException e)
-				{
-					throw new Exception();
-				}
-
-				// System.out.println("Open " + portName + " sucessfully !");
-				return serialPort;
-
-			}
-			else
-			{
-				// 不是串口
-				throw new Exception();
-			}
-		}
-		catch (NoSuchPortException e1)
-		{
-			throw new Exception();
-		}
-		catch (PortInUseException e2)
-		{
-			throw new Exception();
-		}
-	}
-
-	/**
-	 * 关闭串口
-	 * 
-	 * @param serialport
-	 *            待关闭的串口对象
-	 */
-	public static void closePort(SerialPort serialPort)
-	{
-		if (serialPort != null)
-		{
-			serialPort.close();
-			serialPort = null;
-		}
 	}
 
 	/**
@@ -317,6 +290,16 @@ public class ComConnector implements Connector
 		catch (TooManyListenersException e)
 		{
 			throw new Exception();
+		}
+	}
+
+	@Override
+	public void closeConnect() throws ConnectException
+	{
+		if (serialPort != null)
+		{
+			serialPort.close();
+			serialPort = null;
 		}
 	}
 

@@ -6,6 +6,8 @@ package com.crscic.interfacetesttool.connector;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import com.crscic.interfacetesttool.exception.ConnectException;
+
 /**
  * 
  * @author zhaokai
@@ -29,5 +31,7 @@ public interface Connector
 	 * zhaokai
 	 * 2017年9月10日 下午1:58:03
 	 */
-	public void connect() throws UnknownHostException, IOException;
+	public void openConnect() throws ConnectException;
+	
+	public void closeConnect() throws ConnectException;
 }

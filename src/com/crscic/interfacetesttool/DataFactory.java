@@ -51,11 +51,12 @@ public class DataFactory implements Runnable
 	private List<ResSetting> responseList;
 	/*******************************************************************/
 	private Connector connector;
+	private XmlHelper configXml;
+	private XmlHelper dataXml;
 	
 	public DataFactory(String configPath) throws DocumentException
 	{
-		//TODO:读取配置文件，并打印配置信息
-		XmlHelper configXml = new XmlHelper();
+		configXml = new XmlHelper();
 		Log.info("读取配置文件：" + configPath);
 		configXml.loadXml(configPath);
 		
@@ -63,8 +64,6 @@ public class DataFactory implements Runnable
 		InterfaceType interfaceType = configXml.fill(configNode, InterfaceType.class);
 		Log.info("接口类型为：" + interfaceType.getType());
 		setConnector(interfaceType.getType(), configXml);
-//		Element root = xmlDocument.getRootElement();
-		//TODO:根据配置文件决定使用TCP还是COM
 		
 //		intervalInfoList = new ArrayList<IntervalInfo>();
 	}
@@ -76,6 +75,7 @@ public class DataFactory implements Runnable
 	
 	private void setConnector(String connectorType, XmlHelper configXml)
 	{
+		//TODO:根据配置文件决定使用TCP还是COM
 		Log.info("初始化接口...");
 		Element connectorNode = null;
 		if (connectorType.toLowerCase().equals("socket"))
