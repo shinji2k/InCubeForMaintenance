@@ -13,7 +13,21 @@ import java.net.UnknownHostException;
  */
 public interface Connector
 {
-	public void start();
+	/**
+	 * 发送数据
+	 * 
+	 * zhaokai
+	 * 2017年9月10日 下午2:12:34
+	 */
+	public void send();
 	public void startReply();
+	
+	/**
+	 * 建立连接
+	 * @throws UnknownHostException
+	 * @throws IOException
+	 * zhaokai
+	 * 2017年9月10日 下午1:58:03
+	 */
 	public void connect() throws UnknownHostException, IOException;
 }

@@ -82,14 +82,13 @@ public class DataFactory implements Runnable
 		{
 			connectorNode = configXml.getSingleElement("/root/socket");
 			SocketConfig sockCfg = configXml.fill(connectorNode, SocketConfig.class);
-			Log.info("接口类型为Socket-" + sockCfg.getType() + ",");
 			connector = new SocketConnector(sockCfg);
 		}
 		else if (connectorType.toLowerCase().equals("com"))
 		{
 			connectorNode = configXml.getSingleElement("/root/com");
 			ComConfig comCfg = configXml.fill(connectorNode, ComConfig.class);
-			connector = new ComConnector();
+			connector = new ComConnector(comCfg);
 		}
 	}
 /****************************************************************/

@@ -4,12 +4,13 @@
 package com.crscic.interfacetesttool.connector;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
 import com.crscic.interfacetesttool.entity.SocketConfig;
-import com.k.socket.SocketClient;
-import com.k.socket.SocketServer;
+import com.crscic.interfacetesttool.log.Log;
 
 /**
  * 
@@ -22,7 +23,8 @@ public class SocketConnector implements Connector
 	private int port;
 	private boolean keepAlive;
 	
-	private Socket connect;
+	private Socket connector;
+	private ServerSocket server;
 	
 	public SocketConnector(SocketConfig sockCfg)
 	{
@@ -30,15 +32,31 @@ public class SocketConnector implements Connector
 		this.ip = sockCfg.getIp();
 		this.port = Integer.parseInt(sockCfg.getPort());
 		this.keepAlive = sockCfg.getKeepAlive();
+		
+		String logInfo;
+		if (this.type.equals("server"))
+			logInfo = "监听端口：" + this.port + ", 连接方式：" + (this.keepAlive ? "长连接" : "短连接");
+		else
+			logInfo = "服务器IP：" + this.ip + ", 服务器端口：" + this.port + ", 连接方式：" + (this.keepAlive ? "长连接" : "短连接");
+		
+		Log.info("接口类型为Socket-" + this.type + ", " + logInfo);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.crscic.interfacetesttool.connector.Connector#start()
-	 */
 	@Override
-	public void start()
+	public void send()
 	{
-		
+		if (connector == null)
+		{
+			
+		}
+	}
+	
+	public void sendString(String str) throws IOException
+	{
+		OutputStream os = connector.getOutputStream();
+		System.out.println("发送：" + str);
+		os.write(str.getBytes());
+		os.flush();
 	}
 
 	/* (non-Javadoc)
@@ -51,19 +69,20 @@ public class SocketConnector implements Connector
 		
 	}
 
-	/* (non-Javadoc)
-	 * @see com.crscic.interfacetesttool.connector.Connector#connect()
+	/**
+	 * 连接Socket实现
 	 */
 	@Override
 	public void connect() throws UnknownHostException, IOException
 	{
 		if (type.toLowerCase().equals("client"))
 		{
-			connect = new Socket(ip, port);
+			connector = new Socket(ip, port);
 		}
 		else
 		{
-			SocketServer server = new SocketServer(this.port, keepAlive);
+			server = new ServerSocket(port, 5);
+			connector = server.accept();	//不确定当离开这个方法后，server会不会销毁
 		}
 	}
 }
