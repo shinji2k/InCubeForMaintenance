@@ -31,6 +31,7 @@ import com.crscic.interfacetesttool.entity.ReplyConfig;
 import com.crscic.interfacetesttool.entity.SendConfig;
 import com.crscic.interfacetesttool.entity.SocketConfig;
 import com.crscic.interfacetesttool.exception.AppException;
+import com.crscic.interfacetesttool.exception.ParseXMLException;
 import com.crscic.interfacetesttool.log.Log;
 import com.crscic.interfacetesttool.socket.SocketClient;
 import com.crscic.interfacetesttool.socket.SocketServer;
@@ -63,6 +64,12 @@ public class DataFactory implements Runnable
 		configXml.loadXml(configPath);
 	}
 
+	/**
+	 * 获取连接器
+	 * @return
+	 * @author ken_8
+	 * 2017年9月12日 上午12:25:33
+	 */
 	public Connector getConnector()
 	{
 		Element configNode = configXml.getSingleElement("//config");
@@ -72,6 +79,12 @@ public class DataFactory implements Runnable
 		return connector;
 	}
 
+	/**
+	 * 根据配置设置连接器
+	 * @param connectorType
+	 * @author ken_8
+	 * 2017年9月12日 上午12:25:42
+	 */
 	private void setConnector(String connectorType)
 	{
 		Log.info("初始化接口...");
@@ -90,6 +103,12 @@ public class DataFactory implements Runnable
 		}
 	}
 
+	/**
+	 * 获取配置信息
+	 * @return
+	 * @author ken_8
+	 * 2017年9月12日 上午12:25:04
+	 */
 	public ProtocolConfig getProtocolConfig()
 	{
 		proConfig = new ProtocolConfig();
@@ -142,6 +161,30 @@ public class DataFactory implements Runnable
 		return proConfig;
 	}
 
+	
+	public void getSendData(ProtocolConfig proCfg) throws ParseXMLException
+	{
+		dataXml = new XmlHelper();
+		try
+		{
+			dataXml.loadXml(proCfg.getProFilePath());
+			Log.info("正在生成发送数据...");
+			//获取发送协议
+			List<Element> sendProList = dataXml.getElements("/root/protocols/pro");
+			for (Element sendPro : sendProList)
+			{
+				Log.info("发送协议：" + sendPro.getTextTrim() + ":");
+				//获取协议xml
+				List<Element> partList = dataXml.getElements("/root/" + sendPro.getTextTrim() + "/part");
+				//填装协议配置实体
+			}
+		}
+		catch (DocumentException e)
+		{
+			Log.error("读取协议配置文件错误", e);
+			throw new ParseXMLException();
+		}
+	}
 	/****************************************************************/
 	public DataFactory(Socket s, String configPath)
 	{
