@@ -48,6 +48,17 @@ public class XmlHelper
 			return null;
 		return (Element) xmlDocument.selectSingleNode(xpath);
 	}
+	
+	public List<Element> getElements(String xpath)
+	{
+		if (StringUtils.isNullOrEmpty(xpath))
+			return null;
+		List<?> elements = xmlDocument.selectNodes(xpath);
+		List<Element> res = new ArrayList<Element>();
+		for (int i = 0; i < elements.size(); i++)
+			res.add((Element) elements.get(i));
+		return res;
+	}
 
 	/**
 	 * 将xml某节点下所有子节点自动填装。 要求：该节点下只有一级子节点，且填装类的属性与节点名称一致。 注意：暂不支持属性的填装
@@ -63,8 +74,10 @@ public class XmlHelper
 		try
 		{
 			ret = t.newInstance();
-			@SuppressWarnings("unchecked")
-			List<Element> nodeList = element.elements();
+			List<?> elements = element.elements();
+			List<Element> nodeList = new ArrayList<Element>();
+			for(int i = 0; i < elements.size(); i++)
+				nodeList.add((Element) elements.get(i));
 
 			for (Element node : nodeList)
 			{

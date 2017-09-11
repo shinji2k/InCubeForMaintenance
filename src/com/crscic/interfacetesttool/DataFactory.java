@@ -25,8 +25,10 @@ import com.crscic.interfacetesttool.data.ResInfo;
 import com.crscic.interfacetesttool.data.ResSetting;
 import com.crscic.interfacetesttool.data.SocketInfo;
 import com.crscic.interfacetesttool.entity.ComConfig;
-import com.crscic.interfacetesttool.entity.IConfig;
 import com.crscic.interfacetesttool.entity.InterfaceType;
+import com.crscic.interfacetesttool.entity.ProtocolConfig;
+import com.crscic.interfacetesttool.entity.ReplyConfig;
+import com.crscic.interfacetesttool.entity.SendConfig;
 import com.crscic.interfacetesttool.entity.SocketConfig;
 import com.crscic.interfacetesttool.exception.AppException;
 import com.crscic.interfacetesttool.log.Log;
@@ -36,7 +38,6 @@ import com.crscic.interfacetesttool.xmlhelper.XmlHelper;
 import com.k.util.ByteUtils;
 import com.k.util.CollectionUtils;
 import com.k.util.StringUtils;
-
 
 public class DataFactory implements Runnable
 {
@@ -53,29 +54,26 @@ public class DataFactory implements Runnable
 	private Connector connector;
 	private XmlHelper configXml;
 	private XmlHelper dataXml;
-	
+	private ProtocolConfig proConfig;
+
 	public DataFactory(String configPath) throws DocumentException
 	{
 		configXml = new XmlHelper();
 		Log.info("读取配置文件：" + configPath);
 		configXml.loadXml(configPath);
-		
+	}
+
+	public Connector getConnector()
+	{
 		Element configNode = configXml.getSingleElement("//config");
 		InterfaceType interfaceType = configXml.fill(configNode, InterfaceType.class);
 		Log.info("接口类型为：" + interfaceType.getType());
-		setConnector(interfaceType.getType(), configXml);
-		
-//		intervalInfoList = new ArrayList<IntervalInfo>();
-	}
-	
-	public Connector getConnector()
-	{
+		setConnector(interfaceType.getType());
 		return connector;
 	}
-	
-	private void setConnector(String connectorType, XmlHelper configXml)
+
+	private void setConnector(String connectorType)
 	{
-		//TODO:根据配置文件决定使用TCP还是COM
 		Log.info("初始化接口...");
 		Element connectorNode = null;
 		if (connectorType.toLowerCase().equals("socket"))
@@ -91,7 +89,60 @@ public class DataFactory implements Runnable
 			connector = new ComConnector(comCfg);
 		}
 	}
-/****************************************************************/
+
+	public ProtocolConfig getProtocolConfig()
+	{
+		proConfig = new ProtocolConfig();
+		proConfig.setProFilePath(configXml.getSingleElement("/root/protocol").attributeValue("config"));
+		Log.info("协议文件路径：" + proConfig.getProFilePath());
+		// 发送配置
+		List<SendConfig> sendCfgList = new ArrayList<SendConfig>();
+		List<Element> proList = configXml.getElements("//interval");
+		for (Element pro : proList)
+		{
+			SendConfig proCfg = new SendConfig();
+			proCfg.setInterval(pro.attributeValue("time"));
+			proCfg.setProtocol(pro.attributeValue("protocol"));
+			sendCfgList.add(proCfg);
+		}
+		proConfig.setSendConfig(sendCfgList);
+		// 回复配置
+		List<ReplyConfig> replyCfgList = new ArrayList<ReplyConfig>();
+		List<Element> respEleList = configXml.getElements("//response");
+		for (Element respEle : respEleList)
+		{
+			ReplyConfig replyCfg = new ReplyConfig();
+			replyCfg.setField(respEle.element("field").getStringValue());
+			replyCfg.setValue(respEle.elementTextTrim("value"));
+			replyCfg.setHead(respEle.elementTextTrim("head"));
+			replyCfg.setNodeClass(respEle.elementTextTrim("class"));
+			replyCfg.setPro(respEle.elementTextTrim("pro"));
+			replyCfg.setQuoteField(respEle.element("quote").element("field").getTextTrim());
+			replyCfg.setQuoteFieldName(respEle.element("quote").element("field").attributeValue("name"));
+
+			replyCfgList.add(replyCfg);
+		}
+		proConfig.setReplyConfig(replyCfgList);
+
+		// 打印配置信息
+		Log.info("发送协议概况：");
+		for (int i = 0; i < proConfig.getSendConfig().size(); i++)
+		{
+			SendConfig sendCfg = proConfig.getSendConfig().get(i);
+			Log.info("协议" + (i + 1) + "：" + sendCfg.getProtocol() + "，发送间隔：" + sendCfg.getInterval() + "毫秒");
+		}
+		Log.info("回复协议概况：");
+		for (int i = 0; i < proConfig.getReplyConfig().size(); i++)
+		{
+			ReplyConfig repCfg = proConfig.getReplyConfig().get(i);
+			Log.info("当据请求的第" + repCfg.getField() + "字节中内容为" + repCfg.getValue() + "时回复协议：" + repCfg.getPro());
+			Log.info("    请求的报文头：" + repCfg.getHead() + "，响应消息中的" + (String) repCfg.getQuoteFieldName(String.class) + "字段使用请求中第" + repCfg.getQuoteField() + "字节中的内容");
+		}
+
+		return proConfig;
+	}
+
+	/****************************************************************/
 	public DataFactory(Socket s, String configPath)
 	{
 		this.s = s;
@@ -300,7 +351,6 @@ public class DataFactory implements Runnable
 		else
 			this.startSocketServer();
 	}
-
 
 	/**
 	 * 远程线程调用。处理接收的消息

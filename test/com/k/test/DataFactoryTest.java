@@ -7,7 +7,7 @@ import org.dom4j.DocumentException;
 import org.junit.Test;
 
 import com.crscic.interfacetesttool.DataFactory;
-import com.crscic.interfacetesttool.connector.Connector;
+import com.crscic.interfacetesttool.entity.ProtocolConfig;
 import com.crscic.interfacetesttool.log.Log;
 
 /**
@@ -23,7 +23,20 @@ public class DataFactoryTest
 		try
 		{
 			DataFactory df = new DataFactory("config/config.xml");
-			Connector conn = df.getConnector();
+//			Connector conn = df.getConnector();
+			//TODO: initConfig-getProtocolConfig
+			ProtocolConfig proCfg = df.getProtocolConfig();
+			//TODO: initProtocol-getProtocolData one or more
+			//TODO: sendProtocol
+//			conn.send();
+			//TODO: initResponse
+//			try
+//			{
+//				conn.closeConnect();
+//			}
+//			catch (ConnectException e)
+//			{
+//			}
 			
 		}
 		catch (DocumentException e)

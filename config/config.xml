@@ -26,9 +26,9 @@
 		<type>client</type>
 		<!-- if server, set null -->
 		<!-- 若为server，则此节点留空（需要保留节点） -->
-		<ip>192.168.6.11</ip>
+		<ip>10.3.3.178</ip>
 		<!-- 若为server，则此节点为监听端口；若为client，则此节点为连接服务器的端口 -->
-		<port>1035</port>
+		<port>7676</port>
 		<!-- 是否长连接, true或者false -->
 		<keepAlive>true</keepAlive>
 	</socket>
