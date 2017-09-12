@@ -9,9 +9,12 @@ import org.dom4j.DocumentException;
 import org.junit.Test;
 
 import com.crscic.interfacetesttool.DataFactory;
+import com.crscic.interfacetesttool.data.Data;
 import com.crscic.interfacetesttool.entity.ProtocolConfig;
 import com.crscic.interfacetesttool.entity.ProtocolStructure;
+import com.crscic.interfacetesttool.exception.GenerateDataException;
 import com.crscic.interfacetesttool.exception.ParseXMLException;
+import com.k.util.ByteUtils;
 
 /**
  * 
@@ -30,6 +33,8 @@ public class DataFactoryTest
 			//TODO: initConfig-getProtocolConfig
 			ProtocolConfig proCfg = df.getProtocolConfig();
 			List<ProtocolStructure> proStructList = df.getProtocolStructure(proCfg);
+			String out = ByteUtils.byteArraytoHexString(df.getSendData(proStructList.get(0)));
+			System.out.println(out);
 			//TODO: initProtocol-getProtocolData one or more
 			//TODO: sendProtocol
 //			conn.send();
@@ -48,6 +53,10 @@ public class DataFactoryTest
 			e.printStackTrace();
 		}
 		catch (ParseXMLException e)
+		{
+			e.printStackTrace();
+		}
+		catch (GenerateDataException e)
 		{
 			e.printStackTrace();
 		}

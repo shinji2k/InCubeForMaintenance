@@ -50,7 +50,7 @@ public class ComConnector implements Connector
 	 * @see com.crscic.interfacetesttool.connector.Connector#start()
 	 */
 	@Override
-	public void send()
+	public void send(byte[] data)
 	{
 		// TODO Auto-generated method stub
 

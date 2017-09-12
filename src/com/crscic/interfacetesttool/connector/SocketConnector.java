@@ -44,11 +44,40 @@ public class SocketConnector implements Connector
 	}
 
 	@Override
-	public void send()
+	public void send(byte[] data)
 	{
 		if (connector == null)
 		{
 
+		}
+		else
+		{
+			OutputStream os = null;
+			try
+			{
+				os = connector.getOutputStream();
+				os.write(data);
+				os.flush();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			finally
+			{
+				//TODO: 增加keepAlive的判断
+				if (os != null)
+				{
+					try
+					{
+						os.close();
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 	}
 
@@ -118,9 +147,9 @@ public class SocketConnector implements Connector
 				server.close();
 			if (keepAlive)
 			{
-				//如果是长连接的话，那么输入输出流应该是打开状态的，是否需要关闭一下呢？
+				// 如果是长连接的话，那么输入输出流应该是打开状态的，是否需要关闭一下呢？
 			}
-				
+
 		}
 		catch (IOException e)
 		{

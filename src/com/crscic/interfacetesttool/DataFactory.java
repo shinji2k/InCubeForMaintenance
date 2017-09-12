@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ import org.dom4j.io.SAXReader;
 import com.crscic.interfacetesttool.connector.ComConnector;
 import com.crscic.interfacetesttool.connector.Connector;
 import com.crscic.interfacetesttool.connector.SocketConnector;
+import com.crscic.interfacetesttool.data.Data;
 import com.crscic.interfacetesttool.data.IntervalInfo;
 import com.crscic.interfacetesttool.data.ResInfo;
 import com.crscic.interfacetesttool.data.ResSetting;
@@ -34,6 +36,7 @@ import com.crscic.interfacetesttool.entity.ReplyConfig;
 import com.crscic.interfacetesttool.entity.SendConfig;
 import com.crscic.interfacetesttool.entity.SocketConfig;
 import com.crscic.interfacetesttool.exception.AppException;
+import com.crscic.interfacetesttool.exception.GenerateDataException;
 import com.crscic.interfacetesttool.exception.ParseXMLException;
 import com.crscic.interfacetesttool.log.Log;
 import com.crscic.interfacetesttool.socket.SocketClient;
@@ -59,6 +62,7 @@ public class DataFactory implements Runnable
 	private XmlHelper configXml;
 	private XmlHelper dataXml;
 	private ProtocolConfig proConfig;
+	private Data sendData;
 
 	public DataFactory(String configPath) throws DocumentException
 	{
@@ -167,16 +171,16 @@ public class DataFactory implements Runnable
 
 	/**
 	 * 返回发送的协议结构
+	 * 
 	 * @param proCfg
 	 * @return
 	 * @throws ParseXMLException
-	 * @author zhaokai
-	 * 2017年9月12日 下午12:37:38
+	 * @author zhaokai 2017年9月12日 下午12:37:38
 	 */
 	public List<ProtocolStructure> getProtocolStructure(ProtocolConfig proCfg) throws ParseXMLException
 	{
-		dataXml = new XmlHelper();	//是否移走
-		List<ProtocolStructure> proInfo = new ArrayList<ProtocolStructure>(); 
+		dataXml = new XmlHelper(); // 是否移走
+		List<ProtocolStructure> proInfo = new ArrayList<ProtocolStructure>();
 		try
 		{
 			dataXml.loadXml(proCfg.getProFilePath());
@@ -190,11 +194,11 @@ public class DataFactory implements Runnable
 				Element proEle = dataXml.getSingleElement("/root/" + pro.getTextTrim());
 				// 填装协议配置实体
 				List<Part> partList = fillPart(proEle);
-				
+
 				ProtocolStructure protocol = new ProtocolStructure();
 				protocol.setProtocolName(pro.getTextTrim());
 				protocol.setPart(partList);
-				
+
 				proInfo.add(protocol);
 			}
 		}
@@ -203,16 +207,16 @@ public class DataFactory implements Runnable
 			Log.error("读取协议配置文件错误", e);
 			throw new ParseXMLException();
 		}
-		
+
 		return proInfo;
 	}
 
 	/**
 	 * 将Part节点内容填充的实体
+	 * 
 	 * @param ele
 	 * @return
-	 * @author zhaokai
-	 * 2017年9月12日 下午12:37:06
+	 * @author zhaokai 2017年9月12日 下午12:37:06
 	 */
 	private List<Part> fillPart(Element ele)
 	{
@@ -236,26 +240,27 @@ public class DataFactory implements Runnable
 			part.setType(partEle.element("type").getTextTrim());
 			// 分隔符
 			part.setSplit(partEle.element("split") == null ? null : partEle.element("split").getTextTrim());
-			//补全字节
+			// 补全字节
 			part.setFillByte(partEle.element("fill-byte") == null ? null : partEle.element("fill-byte").getTextTrim());
-			//补全方向
-			part.setFillDirection(partEle.element("fill-direction") == null ? null : partEle.element("fill-direction").getTextTrim());
-			//value类型
+			// 补全方向
+			part.setFillDirection(
+					partEle.element("fill-direction") == null ? null : partEle.element("fill-direction").getTextTrim());
+			// value类型
 			part.setValueClass(partEle.element("class") == null ? null : partEle.element("class").getTextTrim());
-			//长度
+			// 长度
 			part.setLen(partEle.element("len") == null ? null : partEle.element("len").getTextTrim());
-			//值，分子节点和数值两种情况
-			Element childPartEle = partEle.element("value");
-			if (childPartEle == null)
+			// 值，分子节点和数值两种情况
+			Element valueNode = partEle.element("value");
+			if (valueNode.element("part") == null)
 			{
 				part.setValue(partEle.element("value").getTextTrim());
 				part.setChildNodeList(new ArrayList<Part>());
 			}
 			else
 			{
-				part.setChildNodeList(fillPart(childPartEle));
+				part.setChildNodeList(fillPart(valueNode));
 			}
-			
+
 			partList.add(part);
 		}
 		return partList;
@@ -264,13 +269,15 @@ public class DataFactory implements Runnable
 	/**
 	 * 生成发送数据
 	 * 
-	 * @author zhaokai
-	 * 2017年9月12日 下午12:38:22
+	 * @author zhaokai 2017年9月12日 下午12:38:22
+	 * @throws GenerateDataException 
 	 */
-	public void generateSendData(ProtocolStructure proStruct)
+	public byte[] getSendData(ProtocolStructure proStruct) throws GenerateDataException
 	{
-		List<Part> partList = proStruct.getPart();
+		Data data = new Data();
+		return data.getSendData(proStruct);
 	}
+
 	/****************************************************************/
 	public DataFactory(Socket s, String configPath)
 	{

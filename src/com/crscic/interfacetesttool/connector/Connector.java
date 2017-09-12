@@ -21,7 +21,7 @@ public interface Connector
 	 * zhaokai
 	 * 2017年9月10日 下午2:12:34
 	 */
-	public void send();
+	public void send(byte[] data);
 	public void startReply();
 	
 	/**
