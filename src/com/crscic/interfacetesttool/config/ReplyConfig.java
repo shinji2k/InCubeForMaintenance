@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.crscic.interfacetesttool.entity;
+package com.crscic.interfacetesttool.config;
 
 import java.util.ArrayList;
 import java.util.List;

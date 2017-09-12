@@ -94,7 +94,7 @@ public class XmlHelper
 	 * @param t
 	 * @return zhaokai 2017年9月6日 下午6:33:25
 	 */
-	public <T> T fill(Element element, Class<T> t)
+	public static <T> T fill(Element element, Class<T> t)
 	{
 		T ret = null;
 		Method[] methods = t.getDeclaredMethods();

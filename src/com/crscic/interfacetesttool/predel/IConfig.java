@@ -1,4 +1,4 @@
-package com.crscic.interfacetesttool.entity;
+package com.crscic.interfacetesttool.predel;
 
 public interface IConfig
 {

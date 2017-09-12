@@ -9,7 +9,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,22 +18,18 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
+import com.crscic.interfacetesttool.config.Config;
+import com.crscic.interfacetesttool.config.ConfigHandler;
 import com.crscic.interfacetesttool.connector.ComConnector;
 import com.crscic.interfacetesttool.connector.Connector;
 import com.crscic.interfacetesttool.connector.SocketConnector;
 import com.crscic.interfacetesttool.data.Data;
 import com.crscic.interfacetesttool.data.IntervalInfo;
+import com.crscic.interfacetesttool.data.Part;
+import com.crscic.interfacetesttool.data.ProtocolStructure;
 import com.crscic.interfacetesttool.data.ResInfo;
 import com.crscic.interfacetesttool.data.ResSetting;
 import com.crscic.interfacetesttool.data.SocketInfo;
-import com.crscic.interfacetesttool.entity.ComConfig;
-import com.crscic.interfacetesttool.entity.InterfaceType;
-import com.crscic.interfacetesttool.entity.Part;
-import com.crscic.interfacetesttool.entity.ProtocolConfig;
-import com.crscic.interfacetesttool.entity.ProtocolStructure;
-import com.crscic.interfacetesttool.entity.ReplyConfig;
-import com.crscic.interfacetesttool.entity.SendConfig;
-import com.crscic.interfacetesttool.entity.SocketConfig;
 import com.crscic.interfacetesttool.exception.AppException;
 import com.crscic.interfacetesttool.exception.GenerateDataException;
 import com.crscic.interfacetesttool.exception.ParseXMLException;
@@ -58,116 +53,39 @@ public class DataFactory implements Runnable
 	private String configPath;
 	private List<ResSetting> responseList;
 	/*******************************************************************/
+	private ConfigHandler config;
 	private Connector connector;
 	private XmlHelper configXml;
 	private XmlHelper dataXml;
-	private ProtocolConfig proConfig;
 	private Data sendData;
 
 	public DataFactory(String configPath) throws DocumentException
 	{
-		configXml = new XmlHelper();
-		Log.info("读取配置文件：" + configPath);
-		configXml.loadXml(configPath);
+		this.configPath = configPath;
 	}
-
+	
 	/**
 	 * 获取连接器
 	 * 
 	 * @return
 	 * @author ken_8 2017年9月12日 上午12:25:33
 	 */
-	public Connector getConnector()
+	public Connector getConnector() throws DocumentException
 	{
-		Element configNode = configXml.getSingleElement("//config");
-		InterfaceType interfaceType = configXml.fill(configNode, InterfaceType.class);
-		Log.info("接口类型为：" + interfaceType.getType());
-		setConnector(interfaceType.getType());
+		configXml = new XmlHelper();
+		Log.info("读取程序配置：" + configPath);
+		configXml.loadXml(configPath);
+		config = new ConfigHandler(configXml);
+		Log.info("接口类型为：" + config.getConnectType());
+		if (config.getConnectType().toLowerCase().equals("socket"))
+			connector = new SocketConnector(config.getSocketConfig());
+		else if (config.getConnectType().toLowerCase().equals("com"))
+			connector = new ComConnector(config.getComConfig());
+		
 		return connector;
 	}
 
-	/**
-	 * 根据配置设置连接器
-	 * 
-	 * @param connectorType
-	 * @author ken_8 2017年9月12日 上午12:25:42
-	 */
-	private void setConnector(String connectorType)
-	{
-		Log.info("初始化接口...");
-		Element connectorNode = null;
-		if (connectorType.toLowerCase().equals("socket"))
-		{
-			connectorNode = configXml.getSingleElement("/root/socket");
-			SocketConfig sockCfg = configXml.fill(connectorNode, SocketConfig.class);
-			connector = new SocketConnector(sockCfg);
-		}
-		else if (connectorType.toLowerCase().equals("com"))
-		{
-			connectorNode = configXml.getSingleElement("/root/com");
-			ComConfig comCfg = configXml.fill(connectorNode, ComConfig.class);
-			connector = new ComConnector(comCfg);
-		}
-	}
-
-	/**
-	 * 获取配置信息
-	 * 
-	 * @return
-	 * @author ken_8 2017年9月12日 上午12:25:04
-	 */
-	public ProtocolConfig getProtocolConfig()
-	{
-		proConfig = new ProtocolConfig();
-		proConfig.setProFilePath(configXml.getSingleElement("/root/protocol").attributeValue("config"));
-		Log.info("协议文件路径：" + proConfig.getProFilePath());
-		// 发送配置
-		List<SendConfig> sendCfgList = new ArrayList<SendConfig>();
-		List<Element> proList = configXml.getElements("//interval");
-		for (Element pro : proList)
-		{
-			SendConfig proCfg = new SendConfig();
-			proCfg.setInterval(pro.attributeValue("time"));
-			proCfg.setProtocol(pro.attributeValue("protocol"));
-			sendCfgList.add(proCfg);
-		}
-		proConfig.setSendConfig(sendCfgList);
-		// 回复配置
-		List<ReplyConfig> replyCfgList = new ArrayList<ReplyConfig>();
-		List<Element> respEleList = configXml.getElements("//response");
-		for (Element respEle : respEleList)
-		{
-			ReplyConfig replyCfg = new ReplyConfig();
-			replyCfg.setField(respEle.element("field").getStringValue());
-			replyCfg.setValue(respEle.elementTextTrim("value"));
-			replyCfg.setHead(respEle.elementTextTrim("head"));
-			replyCfg.setNodeClass(respEle.elementTextTrim("class"));
-			replyCfg.setPro(respEle.elementTextTrim("pro"));
-			replyCfg.setQuoteField(respEle.element("quote").element("field").getTextTrim());
-			replyCfg.setQuoteFieldName(respEle.element("quote").element("field").attributeValue("name"));
-
-			replyCfgList.add(replyCfg);
-		}
-		proConfig.setReplyConfig(replyCfgList);
-
-		// 打印配置信息
-		Log.info("发送协议概况：");
-		for (int i = 0; i < proConfig.getSendConfig().size(); i++)
-		{
-			SendConfig sendCfg = proConfig.getSendConfig().get(i);
-			Log.info("协议" + (i + 1) + "：" + sendCfg.getProtocol() + "，发送间隔：" + sendCfg.getInterval() + "毫秒");
-		}
-		Log.info("回复协议概况：");
-		for (int i = 0; i < proConfig.getReplyConfig().size(); i++)
-		{
-			ReplyConfig repCfg = proConfig.getReplyConfig().get(i);
-			Log.info("当据请求的第" + repCfg.getField() + "字节中内容为" + repCfg.getValue() + "时回复协议：" + repCfg.getPro());
-			Log.info("    请求的报文头：" + repCfg.getHead() + "，响应消息中的" + (String) repCfg.getQuoteFieldName(String.class)
-					+ "字段使用请求中第" + repCfg.getQuoteField() + "字节中的内容");
-		}
-
-		return proConfig;
-	}
+	
 
 	/**
 	 * 返回发送的协议结构
@@ -177,7 +95,7 @@ public class DataFactory implements Runnable
 	 * @throws ParseXMLException
 	 * @author zhaokai 2017年9月12日 下午12:37:38
 	 */
-	public List<ProtocolStructure> getProtocolStructure(ProtocolConfig proCfg) throws ParseXMLException
+	public List<ProtocolStructure> getProtocolStructure(Config proCfg) throws ParseXMLException
 	{
 		dataXml = new XmlHelper(); // 是否移走
 		List<ProtocolStructure> proInfo = new ArrayList<ProtocolStructure>();

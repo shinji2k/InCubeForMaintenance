@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.crscic.interfacetesttool.entity;
+package com.crscic.interfacetesttool.predel;
 
 /**
  * config配置文件中的config节点实体

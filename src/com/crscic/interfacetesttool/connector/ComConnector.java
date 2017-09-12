@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.TooManyListenersException;
 
-import com.crscic.interfacetesttool.entity.ComConfig;
+import com.crscic.interfacetesttool.config.ComConfig;
 import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.log.Log;
 

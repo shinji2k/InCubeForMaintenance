@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.crscic.interfacetesttool.entity;
+package com.crscic.interfacetesttool.config;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import java.util.List;
  *
  * 2017年9月11日 上午10:22:41
  */
-public class ProtocolConfig
+public class Config
 {
 	private List<SendConfig> sendConfig;
 	private List<ReplyConfig> replyConfig;

@@ -9,9 +9,9 @@ import org.dom4j.DocumentException;
 import org.junit.Test;
 
 import com.crscic.interfacetesttool.DataFactory;
+import com.crscic.interfacetesttool.config.Config;
 import com.crscic.interfacetesttool.data.Data;
-import com.crscic.interfacetesttool.entity.ProtocolConfig;
-import com.crscic.interfacetesttool.entity.ProtocolStructure;
+import com.crscic.interfacetesttool.data.ProtocolStructure;
 import com.crscic.interfacetesttool.exception.GenerateDataException;
 import com.crscic.interfacetesttool.exception.ParseXMLException;
 import com.k.util.ByteUtils;
@@ -31,7 +31,7 @@ public class DataFactoryTest
 			DataFactory df = new DataFactory("config/config.xml");
 //			Connector conn = df.getConnector();
 			//TODO: initConfig-getProtocolConfig
-			ProtocolConfig proCfg = df.getProtocolConfig();
+			Config proCfg = df.getConfig();
 			List<ProtocolStructure> proStructList = df.getProtocolStructure(proCfg);
 			String out = ByteUtils.byteArraytoHexString(df.getSendData(proStructList.get(0)));
 			System.out.println(out);

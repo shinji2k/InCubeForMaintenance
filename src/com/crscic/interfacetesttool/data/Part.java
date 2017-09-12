@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.crscic.interfacetesttool.entity;
+package com.crscic.interfacetesttool.data;
 
 import java.util.List;
 import java.util.Map;

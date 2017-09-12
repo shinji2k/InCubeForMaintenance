@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import com.crscic.interfacetesttool.entity.Part;
-import com.crscic.interfacetesttool.entity.ProtocolStructure;
 import com.crscic.interfacetesttool.exception.AppException;
 import com.crscic.interfacetesttool.exception.GenerateDataException;
 import com.crscic.interfacetesttool.log.Log;
