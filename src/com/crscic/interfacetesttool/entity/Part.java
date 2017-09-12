@@ -3,6 +3,7 @@
  */
 package com.crscic.interfacetesttool.entity;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Map;
  * @author ken_8
  * 2017年9月10日 下午11:50:07
  */
-public class SendData
+public class Part
 {
 	private String type;
 	private String value;
@@ -26,10 +27,10 @@ public class SendData
 	/**
 	 * "class"
 	 */
-	private String nodeClass;
+	private String valueClass;
 	private String len;
 	
-	private SendData childNode;
+	private List<Part> childNodeList;
 	private Map<String, String> attribute;
 
 	/**
@@ -113,19 +114,19 @@ public class SendData
 	}
 
 	/**
-	 * @return the nodeClass
+	 * @return the valueClass
 	 */
-	public String getNodeClass()
+	public String getValueClass()
 	{
-		return nodeClass;
+		return valueClass;
 	}
 
 	/**
-	 * @param nodeClass the nodeClass to set
+	 * @param valueClass the valueClass to set
 	 */
-	public void setNodeClass(String nodeClass)
+	public void setValueClass(String valueClass)
 	{
-		this.nodeClass = nodeClass;
+		this.valueClass = valueClass;
 	}
 
 	/**
@@ -147,17 +148,17 @@ public class SendData
 	/**
 	 * @return the childNode
 	 */
-	public SendData getChildNode()
+	public List<Part> getChildNodeList()
 	{
-		return childNode;
+		return childNodeList;
 	}
 
 	/**
 	 * @param childNode the childNode to set
 	 */
-	public void setChildNode(SendData childNode)
+	public void setChildNodeList(List<Part> childNodeList)
 	{
-		this.childNode = childNode;
+		this.childNodeList = childNodeList;
 	}
 
 	/**

@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -26,7 +27,9 @@ import com.crscic.interfacetesttool.data.ResSetting;
 import com.crscic.interfacetesttool.data.SocketInfo;
 import com.crscic.interfacetesttool.entity.ComConfig;
 import com.crscic.interfacetesttool.entity.InterfaceType;
+import com.crscic.interfacetesttool.entity.Part;
 import com.crscic.interfacetesttool.entity.ProtocolConfig;
+import com.crscic.interfacetesttool.entity.ProtocolStructure;
 import com.crscic.interfacetesttool.entity.ReplyConfig;
 import com.crscic.interfacetesttool.entity.SendConfig;
 import com.crscic.interfacetesttool.entity.SocketConfig;
@@ -66,9 +69,9 @@ public class DataFactory implements Runnable
 
 	/**
 	 * 获取连接器
+	 * 
 	 * @return
-	 * @author ken_8
-	 * 2017年9月12日 上午12:25:33
+	 * @author ken_8 2017年9月12日 上午12:25:33
 	 */
 	public Connector getConnector()
 	{
@@ -81,9 +84,9 @@ public class DataFactory implements Runnable
 
 	/**
 	 * 根据配置设置连接器
+	 * 
 	 * @param connectorType
-	 * @author ken_8
-	 * 2017年9月12日 上午12:25:42
+	 * @author ken_8 2017年9月12日 上午12:25:42
 	 */
 	private void setConnector(String connectorType)
 	{
@@ -105,9 +108,9 @@ public class DataFactory implements Runnable
 
 	/**
 	 * 获取配置信息
+	 * 
 	 * @return
-	 * @author ken_8
-	 * 2017年9月12日 上午12:25:04
+	 * @author ken_8 2017年9月12日 上午12:25:04
 	 */
 	public ProtocolConfig getProtocolConfig()
 	{
@@ -155,28 +158,44 @@ public class DataFactory implements Runnable
 		{
 			ReplyConfig repCfg = proConfig.getReplyConfig().get(i);
 			Log.info("当据请求的第" + repCfg.getField() + "字节中内容为" + repCfg.getValue() + "时回复协议：" + repCfg.getPro());
-			Log.info("    请求的报文头：" + repCfg.getHead() + "，响应消息中的" + (String) repCfg.getQuoteFieldName(String.class) + "字段使用请求中第" + repCfg.getQuoteField() + "字节中的内容");
+			Log.info("    请求的报文头：" + repCfg.getHead() + "，响应消息中的" + (String) repCfg.getQuoteFieldName(String.class)
+					+ "字段使用请求中第" + repCfg.getQuoteField() + "字节中的内容");
 		}
 
 		return proConfig;
 	}
 
-	
-	public void getSendData(ProtocolConfig proCfg) throws ParseXMLException
+	/**
+	 * 返回发送的协议结构
+	 * @param proCfg
+	 * @return
+	 * @throws ParseXMLException
+	 * @author zhaokai
+	 * 2017年9月12日 下午12:37:38
+	 */
+	public List<ProtocolStructure> getProtocolStructure(ProtocolConfig proCfg) throws ParseXMLException
 	{
-		dataXml = new XmlHelper();
+		dataXml = new XmlHelper();	//是否移走
+		List<ProtocolStructure> proInfo = new ArrayList<ProtocolStructure>(); 
 		try
 		{
 			dataXml.loadXml(proCfg.getProFilePath());
-			Log.info("正在生成发送数据...");
-			//获取发送协议
-			List<Element> sendProList = dataXml.getElements("/root/protocols/pro");
-			for (Element sendPro : sendProList)
+			Log.info("正在生成协议数据...");
+			// 获取发送协议
+			List<Element> proList = dataXml.getElements("/root/protocols/pro");
+			for (Element pro : proList)
 			{
-				Log.info("发送协议：" + sendPro.getTextTrim() + ":");
-				//获取协议xml
-				List<Element> partList = dataXml.getElements("/root/" + sendPro.getTextTrim() + "/part");
-				//填装协议配置实体
+				Log.info("协议：" + pro.getTextTrim() + ":");
+				// 获取协议Element
+				Element proEle = dataXml.getSingleElement("/root/" + pro.getTextTrim());
+				// 填装协议配置实体
+				List<Part> partList = fillPart(proEle);
+				
+				ProtocolStructure protocol = new ProtocolStructure();
+				protocol.setProtocolName(pro.getTextTrim());
+				protocol.setPart(partList);
+				
+				proInfo.add(protocol);
 			}
 		}
 		catch (DocumentException e)
@@ -184,6 +203,73 @@ public class DataFactory implements Runnable
 			Log.error("读取协议配置文件错误", e);
 			throw new ParseXMLException();
 		}
+		
+		return proInfo;
+	}
+
+	/**
+	 * 将Part节点内容填充的实体
+	 * @param ele
+	 * @return
+	 * @author zhaokai
+	 * 2017年9月12日 下午12:37:06
+	 */
+	private List<Part> fillPart(Element ele)
+	{
+		List<Part> partList = new ArrayList<Part>();
+		List<Element> partEleList = XmlHelper.getElements(ele);
+		for (Element partEle : partEleList)
+		{
+			Part part = new Part();
+			// 设置节点属性
+			Map<String, String> attrMap = null;
+			List<Attribute> attrList = XmlHelper.getAttributes(partEle);
+			if (attrList.size() > 0)
+			{
+				attrMap = new HashMap<String, String>();
+				for (Attribute attr : attrList)
+					attrMap.put(attr.getName(), attr.getValue());
+			}
+			part.setAttribute(attrMap);
+
+			// 类型
+			part.setType(partEle.element("type").getTextTrim());
+			// 分隔符
+			part.setSplit(partEle.element("split") == null ? null : partEle.element("split").getTextTrim());
+			//补全字节
+			part.setFillByte(partEle.element("fill-byte") == null ? null : partEle.element("fill-byte").getTextTrim());
+			//补全方向
+			part.setFillDirection(partEle.element("fill-direction") == null ? null : partEle.element("fill-direction").getTextTrim());
+			//value类型
+			part.setValueClass(partEle.element("class") == null ? null : partEle.element("class").getTextTrim());
+			//长度
+			part.setLen(partEle.element("len") == null ? null : partEle.element("len").getTextTrim());
+			//值，分子节点和数值两种情况
+			Element childPartEle = partEle.element("value");
+			if (childPartEle == null)
+			{
+				part.setValue(partEle.element("value").getTextTrim());
+				part.setChildNodeList(new ArrayList<Part>());
+			}
+			else
+			{
+				part.setChildNodeList(fillPart(childPartEle));
+			}
+			
+			partList.add(part);
+		}
+		return partList;
+	}
+
+	/**
+	 * 生成发送数据
+	 * 
+	 * @author zhaokai
+	 * 2017年9月12日 下午12:38:22
+	 */
+	public void generateSendData(ProtocolStructure proStruct)
+	{
+		List<Part> partList = proStruct.getPart();
 	}
 	/****************************************************************/
 	public DataFactory(Socket s, String configPath)

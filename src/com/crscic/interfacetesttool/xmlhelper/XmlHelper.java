@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -58,6 +59,32 @@ public class XmlHelper
 		for (int i = 0; i < elements.size(); i++)
 			res.add((Element) elements.get(i));
 		return res;
+	}
+	
+	public static List<Element> getElements(Element ele)
+	{
+		List<Element> childEleList = new ArrayList<Element>();;
+		List<?> elements = ele.elements();
+		if (elements.size() > 0)
+		{
+			for (int i = 0; i < elements.size(); i++)
+				childEleList.add((Element) elements.get(i));
+		}
+		
+		return childEleList;
+	}
+	
+	public static List<Attribute> getAttributes(Element ele)
+	{
+		List<Attribute> attrList = new ArrayList<Attribute>();;
+		List<?> attrObjList = ele.attributes();
+		if (attrObjList.size() > 0)
+		{
+			for (int i = 0; i < attrObjList.size(); i++)
+				attrList.add((Attribute) attrObjList.get(i));
+		}
+		
+		return attrList;
 	}
 
 	/**

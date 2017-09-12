@@ -3,12 +3,15 @@
  */
 package com.k.test;
 
+import java.util.List;
+
 import org.dom4j.DocumentException;
 import org.junit.Test;
 
 import com.crscic.interfacetesttool.DataFactory;
 import com.crscic.interfacetesttool.entity.ProtocolConfig;
-import com.crscic.interfacetesttool.log.Log;
+import com.crscic.interfacetesttool.entity.ProtocolStructure;
+import com.crscic.interfacetesttool.exception.ParseXMLException;
 
 /**
  * 
@@ -26,6 +29,7 @@ public class DataFactoryTest
 //			Connector conn = df.getConnector();
 			//TODO: initConfig-getProtocolConfig
 			ProtocolConfig proCfg = df.getProtocolConfig();
+			List<ProtocolStructure> proStructList = df.getProtocolStructure(proCfg);
 			//TODO: initProtocol-getProtocolData one or more
 			//TODO: sendProtocol
 //			conn.send();
@@ -43,11 +47,9 @@ public class DataFactoryTest
 		{
 			e.printStackTrace();
 		}
-	}
-	
-	@Test
-	public void LogTest()
-	{
-		Log.info("test log");
+		catch (ParseXMLException e)
+		{
+			e.printStackTrace();
+		}
 	}
 }
