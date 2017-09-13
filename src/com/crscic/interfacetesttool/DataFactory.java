@@ -22,14 +22,12 @@ public class DataFactory
 	private ConfigHandler dataConfig;
 	private Connector connector;
 	private XmlHelper configXml;
-	private XmlHelper dataXml;
 
 	public DataFactory(String configPath) throws DocumentException
 	{
 		configXml = new XmlHelper();
-		Log.info("读取程序配置：" + configPath);
+		Log.info("加载配置文件：" + configPath);
 		configXml.loadXml(configPath);
-		config = new ConfigHandler(configXml);
 	}
 
 	/**
@@ -48,44 +46,21 @@ public class DataFactory
 
 		return connector;
 	}
-
-	public void noName() throws ParseXMLException, GenerateDataException, DocumentException, ConnectException
+	
+	/**
+	 * 获取程序配置
+	 * @return
+	 * @throws ParseXMLException
+	 * @author zhaokai
+	 * 2017年9月13日 下午5:31:15
+	 */
+	public Config getSetting() throws ParseXMLException
 	{
-		Config proSetting = config.getConfig();
-		// 获取协议配置
-		dataXml = new XmlHelper();
-		dataXml.loadXml(proSetting.getProFilePath());
-		dataConfig = new ConfigHandler(dataXml);
-		connector.openConnect();
-		Long lastSendTime = System.currentTimeMillis();
-		Data sendData = new Data();
-		while (true)
-		{
-			// 生成协议数据
-			for (SendConfig sendCfg : proSetting.getSendConfig())
-			{	
-				Long currInterval = System.currentTimeMillis() - lastSendTime;
-				if (currInterval >= Long.parseLong(sendCfg.getInterval()))
-				{
-					byte[] data = sendData.getSendData(dataConfig.getProtocolConfig(sendCfg.getProtocol()));
-					connector.send(data);
-					lastSendTime = System.currentTimeMillis();
-				}
-				else
-				{
-					try
-					{
-						Thread.sleep(100);
-					}
-					catch (InterruptedException e)
-					{
-						e.printStackTrace();
-					}
-				}
-			}
-		}
+		config = new ConfigHandler(configXml);
+		return config.getConfig();
 	}
-
+	
+	public 
 
 	/**
 	 * 生成发送数据

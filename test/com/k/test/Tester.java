@@ -23,7 +23,7 @@ import com.k.util.ByteUtils;
  * @author zhaokai
  * 2017年9月7日 下午3:41:38
  */
-public class DataFactoryTest
+public class Tester
 {
 	@Test
 	public void readConfigTest()
@@ -34,7 +34,6 @@ public class DataFactoryTest
 			//TODO: initConfig-getProtocolConfig
 			Connector conn = df.getConnector();
 			
-			df.noName();
 //			String out = ByteUtils.byteArraytoHexString(df.getSendData(proStructList.get(0)));
 //			System.out.println(out);
 			//TODO: initProtocol-getProtocolData one or more
