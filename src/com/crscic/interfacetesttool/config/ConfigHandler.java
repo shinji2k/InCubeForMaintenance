@@ -119,7 +119,7 @@ public class ConfigHandler
 
 		return proConfig;
 	}
-
+	
 	/**
 	 * 返回协议配置列表
 	 * 

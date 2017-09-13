@@ -1,11 +1,9 @@
-/**
- * 
- */
 package com.crscic.interfacetesttool;
+
+import java.util.List;
 
 import org.dom4j.DocumentException;
 
-import com.crscic.interfacetesttool.config.Config;
 import com.crscic.interfacetesttool.config.ConfigHandler;
 import com.crscic.interfacetesttool.config.SendConfig;
 import com.crscic.interfacetesttool.connector.Connector;
@@ -13,7 +11,6 @@ import com.crscic.interfacetesttool.data.Data;
 import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.exception.GenerateDataException;
 import com.crscic.interfacetesttool.exception.ParseXMLException;
-import com.crscic.interfacetesttool.xmlhelper.XmlHelper;
 
 /**
  * 
@@ -27,22 +24,16 @@ public class SendService
 		
 	}
 	
-	
-	
-	public void noName(Connector connector) throws ParseXMLException, GenerateDataException, DocumentException, ConnectException
+	public void startService (Connector connector, ConfigHandler dataConfig) throws ParseXMLException, GenerateDataException, DocumentException, ConnectException
 	{
-		Config proSetting = config.getConfig();
 		// 获取协议配置
-		dataXml = new XmlHelper();
-		dataXml.loadXml(proSetting.getProFilePath());
-		dataConfig = new ConfigHandler(dataXml);
 		connector.openConnect();
 		Long lastSendTime = System.currentTimeMillis();
 		Data sendData = new Data();
 		while (true)
 		{
 			// 生成协议数据
-			for (SendConfig sendCfg : proSetting.getSendConfig())
+			for (SendConfig sendCfg : dataConfig.getSendConfig())
 			{	
 				Long currInterval = System.currentTimeMillis() - lastSendTime;
 				if (currInterval >= Long.parseLong(sendCfg.getInterval()))
@@ -51,6 +42,8 @@ public class SendService
 					connector.send(data);
 					lastSendTime = System.currentTimeMillis();
 				}
+				
+				//添加接收部分
 				else
 				{
 					try
