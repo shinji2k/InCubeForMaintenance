@@ -43,13 +43,13 @@ public class Data
 		partMem = new ArrayList<PartMem>();
 	}
 
-	public byte[] getSendData(ProtocolStructure proStruct) throws GenerateDataException
+	public byte[] getSendData(ProtocolConfig proConfig) throws GenerateDataException
 	{
-		List<Part> partList = proStruct.getPart();
+		List<Part> partList = proConfig.getPart();
 
 		// 根据协议初始化顺序读文件时的缓存
-		if (proFileOrderMem.containsKey(proStruct.getProtocolName()))
-			fileOrderMem = proFileOrderMem.get(proStruct.getProtocolName());
+		if (proFileOrderMem.containsKey(proConfig.getProtocolName()))
+			fileOrderMem = proFileOrderMem.get(proConfig.getProtocolName());
 		else
 			fileOrderMem = 1;
 		// 引用类型
@@ -76,7 +76,7 @@ public class Data
 		for (int i = 0; i < resTmpList.size(); i++)
 			data[i] = resTmpList.get(i);
 		fileOrderMem++;
-		proFileOrderMem.put(proStruct.getProtocolName(), fileOrderMem);
+		proFileOrderMem.put(proConfig.getProtocolName(), fileOrderMem);
 		fileRandomMem = 0; // 重置为0，下次调用的时候判断要是0的话生成新的随机数，避免重复读取
 		return data;
 	}

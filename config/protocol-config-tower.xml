@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <root>
-	<protocols>
+	<protocols desc="这个列表提供配置文件中配置的协议列表方便查看，程序并不会使用">
 		<pro>alarm_report</pro>
 		<pro>status</pro>
 	</protocols>

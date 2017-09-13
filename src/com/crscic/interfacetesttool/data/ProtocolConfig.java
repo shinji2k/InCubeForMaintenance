@@ -10,7 +10,7 @@ import java.util.List;
  * @author zhaokai
  * 2017年9月12日 下午12:27:44
  */
-public class ProtocolStructure
+public class ProtocolConfig
 {
 	private String protocolName;
 	private List<Part> part;

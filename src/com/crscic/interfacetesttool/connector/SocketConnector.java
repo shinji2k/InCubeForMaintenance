@@ -56,7 +56,7 @@ public class SocketConnector implements Connector
 			try
 			{
 				os = connector.getOutputStream();
-				os.write(data);
+				os.write(data, 0, data.length);
 				os.flush();
 			}
 			catch (IOException e)
@@ -65,8 +65,8 @@ public class SocketConnector implements Connector
 			}
 			finally
 			{
-				//TODO: 增加keepAlive的判断
-				if (os != null)
+				// TODO: 增加keepAlive的判断
+				if (os != null && !keepAlive)
 				{
 					try
 					{

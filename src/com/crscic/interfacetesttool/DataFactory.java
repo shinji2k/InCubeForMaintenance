@@ -20,17 +20,19 @@ import org.dom4j.io.SAXReader;
 
 import com.crscic.interfacetesttool.config.Config;
 import com.crscic.interfacetesttool.config.ConfigHandler;
+import com.crscic.interfacetesttool.config.SendConfig;
 import com.crscic.interfacetesttool.connector.ComConnector;
 import com.crscic.interfacetesttool.connector.Connector;
 import com.crscic.interfacetesttool.connector.SocketConnector;
 import com.crscic.interfacetesttool.data.Data;
 import com.crscic.interfacetesttool.data.IntervalInfo;
 import com.crscic.interfacetesttool.data.Part;
-import com.crscic.interfacetesttool.data.ProtocolStructure;
+import com.crscic.interfacetesttool.data.ProtocolConfig;
 import com.crscic.interfacetesttool.data.ResInfo;
 import com.crscic.interfacetesttool.data.ResSetting;
 import com.crscic.interfacetesttool.data.SocketInfo;
 import com.crscic.interfacetesttool.exception.AppException;
+import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.exception.GenerateDataException;
 import com.crscic.interfacetesttool.exception.ParseXMLException;
 import com.crscic.interfacetesttool.log.Log;
@@ -54,16 +56,20 @@ public class DataFactory implements Runnable
 	private List<ResSetting> responseList;
 	/*******************************************************************/
 	private ConfigHandler config;
+	private ConfigHandler dataConfig;
 	private Connector connector;
 	private XmlHelper configXml;
 	private XmlHelper dataXml;
-	private Data sendData;
 
 	public DataFactory(String configPath) throws DocumentException
 	{
 		this.configPath = configPath;
+		configXml = new XmlHelper();
+		Log.info("读取程序配置：" + configPath);
+		configXml.loadXml(configPath);
+		config = new ConfigHandler(configXml);
 	}
-	
+
 	/**
 	 * 获取连接器
 	 * 
@@ -72,125 +78,60 @@ public class DataFactory implements Runnable
 	 */
 	public Connector getConnector() throws DocumentException
 	{
-		configXml = new XmlHelper();
-		Log.info("读取程序配置：" + configPath);
-		configXml.loadXml(configPath);
-		config = new ConfigHandler(configXml);
 		Log.info("接口类型为：" + config.getConnectType());
 		if (config.getConnectType().toLowerCase().equals("socket"))
 			connector = new SocketConnector(config.getSocketConfig());
 		else if (config.getConnectType().toLowerCase().equals("com"))
 			connector = new ComConnector(config.getComConfig());
-		
+
 		return connector;
 	}
 
-	
-
-	/**
-	 * 返回发送的协议结构
-	 * 
-	 * @param proCfg
-	 * @return
-	 * @throws ParseXMLException
-	 * @author zhaokai 2017年9月12日 下午12:37:38
-	 */
-	public List<ProtocolStructure> getProtocolStructure(Config proCfg) throws ParseXMLException
+	public void noName() throws ParseXMLException, GenerateDataException, DocumentException, ConnectException
 	{
-		dataXml = new XmlHelper(); // 是否移走
-		List<ProtocolStructure> proInfo = new ArrayList<ProtocolStructure>();
-		try
+		Config proSetting = config.getConfig();
+		// 获取协议配置
+		dataXml = new XmlHelper();
+		dataXml.loadXml(proSetting.getProFilePath());
+		dataConfig = new ConfigHandler(dataXml);
+		connector.openConnect();
+		Long lastSendTime = System.currentTimeMillis();
+		Data sendData = new Data();
+		while (true)
 		{
-			dataXml.loadXml(proCfg.getProFilePath());
-			Log.info("正在生成协议数据...");
-			// 获取发送协议
-			List<Element> proList = dataXml.getElements("/root/protocols/pro");
-			for (Element pro : proList)
-			{
-				Log.info("协议：" + pro.getTextTrim() + ":");
-				// 获取协议Element
-				Element proEle = dataXml.getSingleElement("/root/" + pro.getTextTrim());
-				// 填装协议配置实体
-				List<Part> partList = fillPart(proEle);
-
-				ProtocolStructure protocol = new ProtocolStructure();
-				protocol.setProtocolName(pro.getTextTrim());
-				protocol.setPart(partList);
-
-				proInfo.add(protocol);
+			// 生成协议数据
+			for (SendConfig sendCfg : proSetting.getSendConfig())
+			{	
+				Long currInterval = System.currentTimeMillis() - lastSendTime;
+				if (currInterval >= Long.parseLong(sendCfg.getInterval()))
+				{
+					byte[] data = sendData.getSendData(dataConfig.getProtocolConfig(sendCfg.getProtocol()));
+					connector.send(data);
+					lastSendTime = System.currentTimeMillis();
+				}
+				else
+				{
+					try
+					{
+						Thread.sleep(100);
+					}
+					catch (InterruptedException e)
+					{
+						e.printStackTrace();
+					}
+				}
 			}
 		}
-		catch (DocumentException e)
-		{
-			Log.error("读取协议配置文件错误", e);
-			throw new ParseXMLException();
-		}
-
-		return proInfo;
 	}
 
-	/**
-	 * 将Part节点内容填充的实体
-	 * 
-	 * @param ele
-	 * @return
-	 * @author zhaokai 2017年9月12日 下午12:37:06
-	 */
-	private List<Part> fillPart(Element ele)
-	{
-		List<Part> partList = new ArrayList<Part>();
-		List<Element> partEleList = XmlHelper.getElements(ele);
-		for (Element partEle : partEleList)
-		{
-			Part part = new Part();
-			// 设置节点属性
-			Map<String, String> attrMap = null;
-			List<Attribute> attrList = XmlHelper.getAttributes(partEle);
-			if (attrList.size() > 0)
-			{
-				attrMap = new HashMap<String, String>();
-				for (Attribute attr : attrList)
-					attrMap.put(attr.getName(), attr.getValue());
-			}
-			part.setAttribute(attrMap);
-
-			// 类型
-			part.setType(partEle.element("type").getTextTrim());
-			// 分隔符
-			part.setSplit(partEle.element("split") == null ? null : partEle.element("split").getTextTrim());
-			// 补全字节
-			part.setFillByte(partEle.element("fill-byte") == null ? null : partEle.element("fill-byte").getTextTrim());
-			// 补全方向
-			part.setFillDirection(
-					partEle.element("fill-direction") == null ? null : partEle.element("fill-direction").getTextTrim());
-			// value类型
-			part.setValueClass(partEle.element("class") == null ? null : partEle.element("class").getTextTrim());
-			// 长度
-			part.setLen(partEle.element("len") == null ? null : partEle.element("len").getTextTrim());
-			// 值，分子节点和数值两种情况
-			Element valueNode = partEle.element("value");
-			if (valueNode.element("part") == null)
-			{
-				part.setValue(partEle.element("value").getTextTrim());
-				part.setChildNodeList(new ArrayList<Part>());
-			}
-			else
-			{
-				part.setChildNodeList(fillPart(valueNode));
-			}
-
-			partList.add(part);
-		}
-		return partList;
-	}
 
 	/**
 	 * 生成发送数据
 	 * 
 	 * @author zhaokai 2017年9月12日 下午12:38:22
-	 * @throws GenerateDataException 
+	 * @throws GenerateDataException
 	 */
-	public byte[] getSendData(ProtocolStructure proStruct) throws GenerateDataException
+	public byte[] getSendData(ProtocolConfig proStruct) throws GenerateDataException
 	{
 		Data data = new Data();
 		return data.getSendData(proStruct);

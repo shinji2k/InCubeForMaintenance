@@ -10,8 +10,10 @@ import org.junit.Test;
 
 import com.crscic.interfacetesttool.DataFactory;
 import com.crscic.interfacetesttool.config.Config;
+import com.crscic.interfacetesttool.connector.Connector;
 import com.crscic.interfacetesttool.data.Data;
-import com.crscic.interfacetesttool.data.ProtocolStructure;
+import com.crscic.interfacetesttool.data.ProtocolConfig;
+import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.exception.GenerateDataException;
 import com.crscic.interfacetesttool.exception.ParseXMLException;
 import com.k.util.ByteUtils;
@@ -29,14 +31,15 @@ public class DataFactoryTest
 		try
 		{
 			DataFactory df = new DataFactory("config/config.xml");
-//			Connector conn = df.getConnector();
 			//TODO: initConfig-getProtocolConfig
-			Config proCfg = df.getConfig();
-			List<ProtocolStructure> proStructList = df.getProtocolStructure(proCfg);
-			String out = ByteUtils.byteArraytoHexString(df.getSendData(proStructList.get(0)));
-			System.out.println(out);
+			Connector conn = df.getConnector();
+			
+			df.noName();
+//			String out = ByteUtils.byteArraytoHexString(df.getSendData(proStructList.get(0)));
+//			System.out.println(out);
 			//TODO: initProtocol-getProtocolData one or more
 			//TODO: sendProtocol
+//			conn.openConnect();
 //			conn.send();
 			//TODO: initResponse
 //			try
@@ -57,6 +60,10 @@ public class DataFactoryTest
 			e.printStackTrace();
 		}
 		catch (GenerateDataException e)
+		{
+			e.printStackTrace();
+		}
+		catch (ConnectException e)
 		{
 			e.printStackTrace();
 		}

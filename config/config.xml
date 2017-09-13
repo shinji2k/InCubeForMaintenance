@@ -34,7 +34,7 @@
 	</socket>
 
 	<protocol config="config\protocol-config-tower.xml">
-		<interval time="30000" protocol="alarm_report" />
+		<interval time="10000" protocol="alarm_report" />
 		<!-- <interval time="30000" protocol="status" />
 		<interval time="5000" protocol="alarm" /> -->
 		<response>
