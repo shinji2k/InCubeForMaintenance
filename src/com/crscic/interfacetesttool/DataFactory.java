@@ -1,8 +1,11 @@
 package com.crscic.interfacetesttool;
 
+import java.util.HashMap;
+
 import org.dom4j.DocumentException;
-import com.crscic.interfacetesttool.config.Config;
+
 import com.crscic.interfacetesttool.config.ConfigHandler;
+import com.crscic.interfacetesttool.config.ProtocolSetting;
 import com.crscic.interfacetesttool.connector.ComConnector;
 import com.crscic.interfacetesttool.connector.Connector;
 import com.crscic.interfacetesttool.connector.SocketConnector;
@@ -34,7 +37,6 @@ public class DataFactory
 	 */
 	public Connector getConnector() throws DocumentException
 	{
-		Log.info("接口类型为：" + setting.getConnectType());
 		if (setting.getConnectType().toLowerCase().equals("socket"))
 			connector = new SocketConnector(setting.getSocketConfig());
 		else if (setting.getConnectType().toLowerCase().equals("com"))
@@ -50,10 +52,10 @@ public class DataFactory
 	 * @author zhaokai
 	 * 2017年9月13日 下午5:31:15
 	 */
-	public Config getSetting() throws ParseXMLException
+	public ProtocolSetting getProtocolSetting() throws ParseXMLException
 	{
 		setting = new ConfigHandler(configXml);
-		return setting.getConfig();
+		return setting.getProtocolSetting();
 	}
 	
 	/**
@@ -65,7 +67,7 @@ public class DataFactory
 	public byte[] getSendData(ProtocolConfig proConfig) throws GenerateDataException
 	{
 		Data data = new Data();
-		return data.getSendData(proConfig);
+		return data.getSendData(proConfig, new HashMap<String, byte[]>());
 	}
 
 	/**
@@ -76,12 +78,10 @@ public class DataFactory
 	 * @author ken_8
 	 * 2017年9月14日 上午12:30:20
 	 */
-	public ConfigHandler getDataConfig() throws DocumentException, ParseXMLException
+	public ConfigHandler getDataConfig(ProtocolSetting proSetting) throws DocumentException, ParseXMLException
 	{
-		if (this.setting == null)
-			getSetting();
 		XmlHelper dataXml = new XmlHelper();
-		dataXml.loadXml(setting.getConfig().getProFilePath());
+		dataXml.loadXml(proSetting.getProFilePath());
 		ConfigHandler dataConfig = new ConfigHandler(dataXml);
 		return dataConfig;
 	}

@@ -4,14 +4,19 @@
 package com.crscic.interfacetesttool.connector;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.crscic.interfacetesttool.config.SocketConfig;
 import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.log.Log;
+import com.k.util.ByteUtils;
+import com.k.util.CollectionUtils;
 
 /**
  * 
@@ -44,7 +49,7 @@ public class SocketConnector implements Connector
 	}
 
 	@Override
-	public void send(byte[] data)
+	public void send(byte[] data) throws ConnectException
 	{
 		if (connector == null)
 		{
@@ -56,6 +61,7 @@ public class SocketConnector implements Connector
 			try
 			{
 				os = connector.getOutputStream();
+				Log.info("发送数据：" + ByteUtils.byteArraytoHexString(data));
 				os.write(data, 0, data.length);
 				os.flush();
 			}
@@ -65,17 +71,21 @@ public class SocketConnector implements Connector
 			}
 			finally
 			{
-				// TODO: 增加keepAlive的判断
-				if (os != null && !keepAlive)
+				if (!keepAlive)
 				{
-					try
+					if (os != null)
 					{
-						os.close();
+						try
+						{
+							os.close();
+						}
+						catch (IOException e)
+						{
+							e.printStackTrace();
+						}
 					}
-					catch (IOException e)
-					{
-						e.printStackTrace();
-					}
+
+					closeConnect();
 				}
 			}
 		}
@@ -95,10 +105,39 @@ public class SocketConnector implements Connector
 	 * @see com.crscic.interfacetesttool.connector.Connector#startReply()
 	 */
 	@Override
-	public void startReply()
+	public byte[] receive()
 	{
-		// TODO Auto-generated method stub
-
+		InputStream is = null;
+		byte[] res = null;
+		try
+		{
+			is = connector.getInputStream();
+			byte[] buff = new byte[1024];
+			List<Byte> recvData = new ArrayList<Byte>();
+			while (-1 != is.read(buff, 0, buff.length))
+			{
+				CollectionUtils.copyArrayToList(recvData, buff);
+			}
+			res = CollectionUtils.toByteArray(recvData);
+			Log.info("接收：" + ByteUtils.byteArraytoHexString(res));
+		}
+		catch (IOException e)
+		{
+			Log.error("无法获取输入数据", e);
+		}
+		finally
+		{
+			try
+			{
+				if (is != null)
+					is.close();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return res;
 	}
 
 	/**
@@ -111,12 +150,17 @@ public class SocketConnector implements Connector
 		{
 			if (type.toLowerCase().equals("client"))
 			{
+				Log.info("开始连接服务: " + ip + ":" + port);
 				connector = new Socket(ip, port);
+				Log.info("连接成功");
 			}
 			else
 			{
+				Log.info("启动服务...");
 				server = new ServerSocket(port, 5);
+				Log.info("等待客户端连接...");
 				connector = server.accept(); // 不确定当离开这个方法后，server会不会销毁
+				Log.info("连接客户端：" + connector.getRemoteSocketAddress().toString().substring(1));
 			}
 		}
 		catch (UnknownHostException e)

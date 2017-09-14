@@ -61,7 +61,7 @@ public class ConfigHandler
 			proCfg.setInterval(proList.get(i).attributeValue("time"));
 			proCfg.setProtocol(proList.get(i).attributeValue("protocol"));
 			sendCfgList.add(proCfg);
-			Log.info("协议" + (i + 1) + "：" + proCfg.getProtocol() + "，发送间隔：" + proCfg.getInterval() + "毫秒");
+			Log.info("    协议" + (i + 1) + "：" + proCfg.getProtocol() + "，发送间隔：" + proCfg.getInterval() + "毫秒");
 		}
 		return sendCfgList;
 	}
@@ -79,14 +79,14 @@ public class ConfigHandler
 			replyCfg.setValue(respEle.elementTextTrim("value"));
 			replyCfg.setHead(respEle.elementTextTrim("head"));
 			replyCfg.setNodeClass(respEle.elementTextTrim("class"));
-			replyCfg.setPro(respEle.elementTextTrim("pro"));
+			replyCfg.setProtocol(respEle.elementTextTrim("pro"));
 			replyCfg.setQuoteField(respEle.element("quote").element("field").getTextTrim());
 			replyCfg.setQuoteFieldName(respEle.element("quote").element("field").attributeValue("name"));
 
 			replyCfgList.add(replyCfg);
 			
 			// 打印配置信息
-			Log.info("当据请求的第" + replyCfg.getField() + "字节中内容为" + replyCfg.getValue() + "时回复协议：" + replyCfg.getPro());
+			Log.info("    当据请求的第" + replyCfg.getField() + "字节中内容为" + replyCfg.getValue() + "时回复协议：" + replyCfg.getProtocol());
 			Log.info("    请求的报文头：" + replyCfg.getHead() + "，响应消息中的" + (String) replyCfg.getQuoteFieldName(String.class)
 					+ "字段使用请求中第" + replyCfg.getQuoteField() + "字节中的内容");
 		}
@@ -102,22 +102,22 @@ public class ConfigHandler
 	 * @author ken_8 2017年9月12日 上午12:25:04
 	 * @throws ParseXMLException
 	 */
-	public Config getConfig() throws ParseXMLException
+	public ProtocolSetting getProtocolSetting() throws ParseXMLException
 	{
-		Config proConfig = new Config();
-		proConfig.setProFilePath(xml.getSingleElement("/root/protocol").attributeValue("config"));
+		ProtocolSetting proSetting = new ProtocolSetting();
+		proSetting.setProFilePath(xml.getSingleElement("/root/protocol").attributeValue("config"));
 
-		if (StringUtils.isNullOrEmpty(proConfig.getProFilePath()))
+		if (StringUtils.isNullOrEmpty(proSetting.getProFilePath()))
 		{
 			Log.error("协议配置文件路径为空");
 			throw new ParseXMLException();
 		}
 
-		Log.info("协议文件路径：" + proConfig.getProFilePath());
-		proConfig.setSendConfig(getSendConfig());
-		proConfig.setReplyConfig(getReplyConfig());
+		Log.info("协议文件路径：" + proSetting.getProFilePath());
+		proSetting.setSendConfig(getSendConfig());
+		proSetting.setReplyConfig(getReplyConfig());
 
-		return proConfig;
+		return proSetting;
 	}
 	
 	/**
@@ -128,7 +128,7 @@ public class ConfigHandler
 	 * @throws ParseXMLException
 	 * @author zhaokai 2017年9月12日 下午12:37:38
 	 */
-	public List<ProtocolConfig> getProtocolConfigList(Config config) throws ParseXMLException
+	public List<ProtocolConfig> getProtocolConfigList(ProtocolSetting config) throws ParseXMLException
 	{
 		List<ProtocolConfig> proCfgList = new ArrayList<ProtocolConfig>();
 		try

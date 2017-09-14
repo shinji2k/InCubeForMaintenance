@@ -15,7 +15,7 @@ public class GenerateDataException extends Exception
 	private static final long serialVersionUID = 5252257370112197585L;
 	
 	/**
-	 * 当子节点中某节点为空时，抛出异常病记录日志
+	 * 当子节点中某节点为空时，抛出异常并记录日志
 	 * 
 	 * @param nodeAttrName
 	 *            父节点name属性值

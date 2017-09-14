@@ -9,7 +9,7 @@ import org.dom4j.DocumentException;
 import org.junit.Test;
 
 import com.crscic.interfacetesttool.DataFactory;
-import com.crscic.interfacetesttool.config.Config;
+import com.crscic.interfacetesttool.config.ProtocolSetting;
 import com.crscic.interfacetesttool.connector.Connector;
 import com.crscic.interfacetesttool.data.Data;
 import com.crscic.interfacetesttool.data.ProtocolConfig;

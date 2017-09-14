@@ -21,8 +21,8 @@ public interface Connector
 	 * zhaokai
 	 * 2017年9月10日 下午2:12:34
 	 */
-	public void send(byte[] data);
-	public void startReply();
+	public void send(byte[] data) throws ConnectException;
+	public byte[] receive();
 	
 	/**
 	 * 建立连接

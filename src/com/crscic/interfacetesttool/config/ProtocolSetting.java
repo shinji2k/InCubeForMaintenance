@@ -10,7 +10,7 @@ import java.util.List;
  *
  * 2017年9月11日 上午10:22:41
  */
-public class Config
+public class ProtocolSetting
 {
 	private List<SendConfig> sendConfig;
 	private List<ReplyConfig> replyConfig;

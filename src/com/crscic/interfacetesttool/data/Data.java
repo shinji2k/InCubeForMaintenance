@@ -32,8 +32,8 @@ public class Data
 	private int fileRandomMem = 0;
 	private int fileLength = 0;
 	private List<PartMem> partMem; // 缓存需要补完的字段信息
-	private Map<String, byte[]> quoteMap; // 缓存需要从请求中引用数据的字段和使用的数据
-	
+//	private Map<String, byte[]> quoteMap; // 缓存需要从请求中引用数据的字段和使用的数据
+
 	public Data()
 	{
 		proFileOrderMem = new HashMap<String, Integer>();
@@ -43,7 +43,7 @@ public class Data
 		partMem = new ArrayList<PartMem>();
 	}
 
-	public byte[] getSendData(ProtocolConfig proConfig) throws GenerateDataException
+	public byte[] getSendData(ProtocolConfig proConfig, Map<String, byte[]> quoteMap) throws GenerateDataException
 	{
 		List<Part> partList = proConfig.getPart();
 
@@ -53,17 +53,22 @@ public class Data
 		else
 			fileOrderMem = 1;
 		// 引用类型
-		this.quoteMap = new HashMap<String, byte[]>(); // TODO:quoteMap要放到参数中一起传进来
+//		this.quoteMap = new HashMap<String, byte[]>(); // TODO:quoteMap要放到参数中一起传进来
 
 		// 根据配置开始生成数据
 		Map<String, Byte[]> res = new LinkedHashMap<String, Byte[]>();
 		for (Part part : partList)
 		{
 			String attrInfo = part.getAttribute().get("name");
-			byte[] b = getPartData(part);
+			byte[] b = null;
+			//是否是引用字段，需要引用请求中的内容
+			if (quoteMap.containsKey(attrInfo))
+				b = quoteMap.get(attrInfo);
+			else
+				b = getPartData(part);
 			res.put(attrInfo, CollectionUtils.byteToByte(b));
 		}
-		// 补完
+		// 补完之前略过的内容
 		res = reFilling(res);
 		List<Byte> resTmpList = new ArrayList<Byte>();
 		for (Byte[] fieldValueArray : res.values())
@@ -118,6 +123,9 @@ public class Data
 				b = getCheckData(mem, res);
 			res.put(mem.getName(), CollectionUtils.byteToByte(b));
 		}
+		
+		
+		partMem.clear();
 		return res;
 	}
 
@@ -251,8 +259,6 @@ public class Data
 			b = getRandomData(part);
 		else if (typeString.equals("check")) // 校验码
 			setPartMem(part);
-		else if (typeString.equals("quote")) // 引用请求中的字段
-			b = getQuoteData(part);
 		else
 			GenerateDataException.nullNodeValueException(part.getAttribute().get("name"), "type");
 		return b;
@@ -537,23 +543,6 @@ public class Data
 		if (res.toLowerCase().equals("tab"))
 			return "\t";
 		return res;
-	}
-
-	/**
-	 * 针对需要从请求中获取数据的字段，从成员中获取数据并返回
-	 *
-	 * @return
-	 * @author zhaokai
-	 * @version 2017年5月12日 下午4:17:14
-	 */
-	private byte[] getQuoteData(Part part)
-	{
-		String attr_name = part.getAttribute().get("name");
-		if (this.quoteMap.containsKey(attr_name))
-		{
-			return this.quoteMap.get(attr_name);
-		}
-		return null;
 	}
 
 	/**

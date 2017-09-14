@@ -25,7 +25,7 @@ public class ReplyConfig
 	private String head;
 	//"class"
 	private String nodeClass;
-	private String pro;
+	private String protocol;
 	/**
 	 * 需要引用自请求中的字段
 	 */
@@ -93,18 +93,18 @@ public class ReplyConfig
 		this.nodeClass = nodeClass;
 	}
 	/**
-	 * @return the pro
+	 * @return the protocol
 	 */
-	public String getPro()
+	public String getProtocol()
 	{
-		return pro;
+		return protocol;
 	}
 	/**
-	 * @param pro the pro to set
+	 * @param protocol the protocol to set
 	 */
-	public void setPro(String pro)
+	public void setProtocol(String pro)
 	{
-		this.pro = pro;
+		this.protocol = pro;
 	}
 	/**
 	 * @return the quoteField

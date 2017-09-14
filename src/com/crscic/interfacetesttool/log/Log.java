@@ -3,7 +3,8 @@
  */
 package com.crscic.interfacetesttool.log;
 
-import com.k.datetime.TimeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * 
@@ -12,6 +13,13 @@ import com.k.datetime.TimeUtils;
  */
 public class Log
 {
+	private static final Logger logger = LogManager.getLogger();
+	
+	public static void debug(String log)
+	{
+		logger.debug(log);
+	}
+	
 	/**
 	 * 普通日志
 	 * @param log
@@ -20,7 +28,7 @@ public class Log
 	 */
 	public static void info(String log)
 	{
-		System.out.println(TimeUtils.getTimeStamp() + " INFO " + log);
+		logger.info(log);
 	}
 	
 	/**
@@ -32,8 +40,7 @@ public class Log
 	 */
 	public static void error(String log, Exception e)
 	{
-		System.out.println(TimeUtils.getTimeStamp() + " ERR " + log);
-		e.printStackTrace();
+		logger.error(log, e);
 	}
 
 	/**
@@ -44,7 +51,7 @@ public class Log
 	 */
 	public static void error(String log)
 	{
-		System.out.println(TimeUtils.getTimeStamp() + " ERR " + log);
+		logger.error(log);
 	}
 	
 	/**
@@ -55,7 +62,7 @@ public class Log
 	 */
 	public static void warn(String log)
 	{
-		System.out.println(TimeUtils.getTimeStamp() + " WARNING " + log);
+		logger.warn(log);
 	}
 
 	/**
@@ -66,7 +73,7 @@ public class Log
 	 */
 	public static void lengthWarning(String nodaName)
 	{
-		Log.warn(nodaName + "节点生成数据的长度与配置中不一致");
+		logger.warn(nodaName + "节点生成数据的长度与配置中不一致");
 	}
 	
 }
