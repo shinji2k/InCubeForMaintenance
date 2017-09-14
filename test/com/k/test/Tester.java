@@ -20,8 +20,7 @@ import com.k.util.ByteUtils;
 
 /**
  * 
- * @author zhaokai
- * 2017年9月7日 下午3:41:38
+ * @author zhaokai 2017年9月7日 下午3:41:38
  */
 public class Tester
 {
@@ -31,40 +30,25 @@ public class Tester
 		try
 		{
 			DataFactory df = new DataFactory("config/config.xml");
-			//TODO: initConfig-getProtocolConfig
+			// TODO: initConfig-getProtocolConfig
 			Connector conn = df.getConnector();
-			
-//			String out = ByteUtils.byteArraytoHexString(df.getSendData(proStructList.get(0)));
-//			System.out.println(out);
-			//TODO: initProtocol-getProtocolData one or more
-			//TODO: sendProtocol
-//			conn.openConnect();
-//			conn.send();
-			//TODO: initResponse
-//			try
-//			{
-//				conn.closeConnect();
-//			}
-//			catch (ConnectException e)
-//			{
-//			}
-			
+
+			// TODO: initProtocol-getProtocolData one or more
+			// TODO: sendProtocol
+			conn.openConnect();
+			// TODO: initResponse
+			try
+			{
+				conn.closeConnect();
+			}
+			catch (ConnectException e)
+			{
+			}
+
 		}
-		catch (DocumentException e)
+		catch (Exception e)
 		{
-			e.printStackTrace();
-		}
-		catch (ParseXMLException e)
-		{
-			e.printStackTrace();
-		}
-		catch (GenerateDataException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ConnectException e)
-		{
-			e.printStackTrace();
+
 		}
 	}
 }

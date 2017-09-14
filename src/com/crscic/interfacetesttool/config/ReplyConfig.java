@@ -6,6 +6,8 @@ package com.crscic.interfacetesttool.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.crscic.interfacetesttool.entity.Position;
+
 /**
  * @author zhaokai
  *
@@ -16,8 +18,7 @@ public class ReplyConfig
 	/**
 	 * 截取请求中的字段位置，逗号分隔起止
 	 */
-	private int fieldStart;
-	private int fieldStop;
+	private Position cmdTypePos;
 	/**
 	 * 匹配的值
 	 */
@@ -29,27 +30,35 @@ public class ReplyConfig
 	/**
 	 * 需要引用自请求中的字段
 	 */
-	private String quoteField;
+	private Position quotePos;
 	/**
 	 * 引用字段对应发送数据协议中的字段名称
 	 */
 	private List<String> quoteFieldName;
-	/**
-	 * @return the field
-	 */
-	public String getField()
+	
+	public void setQuoteField(String field)
 	{
-		return this.fieldStart + "," + this.fieldStop;
+		this.quotePos = new Position();
+		this.quotePos.setPosition(field, ",");
 	}
-	/**
-	 * @param field the field to set
-	 */
+	
+	public String getQuoteField()
+	{
+		return this.quotePos.getPositionString();
+	}
+	
 	public void setField(String field)
 	{
-		String[] pos = field.split(",");
-		this.fieldStart = Integer.parseInt(pos[0]);
-		this.fieldStop = Integer.parseInt(pos[1]);;
+		this.cmdTypePos = new Position();
+		this.cmdTypePos.setPosition(field, ",");
 	}
+	
+	public String getField()
+	{
+		return this.cmdTypePos.getPositionString();
+	}
+	
+	
 	/**
 	 * @return the value
 	 */
@@ -107,20 +116,6 @@ public class ReplyConfig
 		this.protocol = pro;
 	}
 	/**
-	 * @return the quoteField
-	 */
-	public String getQuoteField()
-	{
-		return quoteField;
-	}
-	/**
-	 * @param quoteField the quoteField to set
-	 */
-	public void setQuoteField(String quoteField)
-	{
-		this.quoteField = quoteField;
-	}
-	/**
 	 * @return the quoteFieldName
 	 */
 	public List<String> getQuoteFieldName()
@@ -153,5 +148,45 @@ public class ReplyConfig
 		this.quoteFieldName = new ArrayList<String>();
 		for (String quoteFieldName : quoteFieldNameArray)
 			this.quoteFieldName.add(quoteFieldName);
+	}
+
+	/**
+	 * @return the cmdTypePos
+	 */
+	public Position getCmdTypePos()
+	{
+		return cmdTypePos;
+	}
+
+	/**
+	 * @param cmdTypePos the cmdTypePos to set
+	 */
+	public void setCmdTypePos(Position cmdTypePos)
+	{
+		this.cmdTypePos = cmdTypePos;
+	}
+
+	/**
+	 * @return the quotePos
+	 */
+	public Position getQuotePos()
+	{
+		return quotePos;
+	}
+
+	/**
+	 * @param quotePos the quotePos to set
+	 */
+	public void setQuotePos(Position quotePos)
+	{
+		this.quotePos = quotePos;
+	}
+
+	/**
+	 * @param quoteFieldName the quoteFieldName to set
+	 */
+	public void setQuoteFieldName(List<String> quoteFieldName)
+	{
+		this.quoteFieldName = quoteFieldName;
 	}
 }

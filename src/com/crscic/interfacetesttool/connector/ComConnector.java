@@ -56,18 +56,6 @@ public class ComConnector implements Connector
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.crscic.interfacetesttool.connector.Connector#startReply()
-	 */
-	@Override
-	public void startReply()
-	{
-		// TODO Auto-generated method stub
-
-	}
-
 	@Override
 	public void openConnect()
 	{
@@ -301,6 +289,16 @@ public class ComConnector implements Connector
 			serialPort.close();
 			serialPort = null;
 		}
+	}
+
+	/* (non-Javadoc)
+	 * @see com.crscic.interfacetesttool.connector.Connector#receive()
+	 */
+	@Override
+	public byte[] receive()
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
