@@ -16,8 +16,9 @@ public class Position
 	public void setPosition(String posString, String splitChar)
 	{
 		String[] posStringArray = posString.split(splitChar);
-		this.startPos = Integer.parseInt(posStringArray[0]);
-		this.stopPos = Integer.parseInt(posStringArray[1]);
+		//配置中记录的位置是从1开始的，转换后要从数组中取，因此减1使索引的开始变为0
+		this.startPos = Integer.parseInt(posStringArray[0]) - 1;
+		this.stopPos = Integer.parseInt(posStringArray[1]) - 1;
 	}
 	
 	public String getPositionString()

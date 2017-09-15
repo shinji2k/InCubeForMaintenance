@@ -17,6 +17,7 @@ import com.crscic.interfacetesttool.entity.Position;
 import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.exception.GenerateDataException;
 import com.crscic.interfacetesttool.exception.ParseXMLException;
+import com.crscic.interfacetesttool.log.Log;
 import com.k.util.ByteUtils;
 import com.k.util.CollectionUtils;
 
@@ -31,54 +32,93 @@ public class SendService
 
 	}
 
-	public void startService(Connector connector, ProtocolSetting setting, ConfigHandler dataConfig)	//TODO:加相关日志输出
+	public void startService(Connector connector, ProtocolSetting proSetting, ConfigHandler dataConfig) // TODO:加相关日志输出
 			throws ParseXMLException, GenerateDataException, DocumentException, ConnectException
 	{
 		// 获取协议配置
 		connector.openConnect();
 		Long lastSendTime = System.currentTimeMillis();
 		Data sendData = new Data();
-		List<Byte> recvList = new ArrayList<Byte>();
+		// List<Byte> recvList = new ArrayList<Byte>();
 		while (true)
 		{
+			try
+			{
+				Thread.sleep(300);
+			}
+			catch (InterruptedException e)
+			{
+				Log.error("Sleep失败");
+				e.printStackTrace();
+			}
+			
 			// 生成协议数据
-			for (SendConfig sendCfg : setting.getSendConfig())
+			for (SendConfig sendCfg : proSetting.getSendConfig())
 			{
 				Long currInterval = System.currentTimeMillis() - lastSendTime;
 				if (currInterval >= Long.parseLong(sendCfg.getInterval()))
 				{
 					byte[] data = sendData.getSendData(dataConfig.getProtocolConfig(sendCfg.getProtocol()),
 							new HashMap<String, byte[]>());
+					Log.info("发送协议" + sendCfg.getProtocol() + "：" + ByteUtils.byteArraytoHexString(data));
 					connector.send(data);
 					lastSendTime = System.currentTimeMillis();
 				}
 			}
 			
-			byte[] recvData = connector.receive();// TODO:怎么判断拿到的是完整的数据呢？
-			CollectionUtils.copyArrayToList(recvList, recvData);
-			for (ReplyConfig replyCfg : setting.getReplyConfig())
-			{
+			//没有进行自动回复配置，无需进行自动回复
+			if (proSetting.getReplyConfig().size() == 0)
+				continue;
 
-				// 查看是否完整
-				byte[] singleRequest = getRequest(recvList, replyCfg.getHead());
-				if (singleRequest == null) // 不完整
-					continue;
+			// 假设Socket每次发送的都是完整的报文。
+			byte[] recvData = connector.receive();
+			// 连接异常中断时会出现接收数据为空的情况
+			if (recvData == null)
+			{
+				connector.closeConnect();
+				connector.openConnect();
+				continue;
+			}
+			/**
+			 * 目前的判断逻辑是采用两个请求头中间的部分视作一条完整的数据。 但这种方式的弊端是每两条请求就会丢弃一条请求，弃包率太高。
+			 * 但增加包尾的判断的话又得增加配置内容，提高了配置的复杂度。 因此暂时不判断接收是否完整
+			 */
+			Log.debug("接收：" + ByteUtils.byteArraytoHexString(recvData));
+			// CollectionUtils.copyArrayToList(recvList, recvData);
+			for (ReplyConfig replyCfg : proSetting.getReplyConfig())
+			{
+				/**
+				 * // 查看是否完整 byte[] singleRequest = getRequest(recvList,
+				 * replyCfg.getHead()); if (singleRequest == null) // 不完整
+				 * continue; Log.info("收到请求：" +
+				 * ByteUtils.byteArraytoHexString(singleRequest));
+				 */
 				// 是不是需要的请求
-				if (!needReply(singleRequest, replyCfg.getCmdTypePos(), replyCfg.getValue(), replyCfg.getNodeClass()))
+				if (!needReply(recvData, replyCfg.getCmdTypePos(), replyCfg.getValue(), replyCfg.getNodeClass()))
+				{
+					Log.info("不是需要回复的请求");
 					continue;
+				}
 				// 设置引用字段
 				Map<String, byte[]> quoteMap = new HashMap<String, byte[]>();
-				byte[] quoteBytes = getQuoteByteArray(singleRequest, replyCfg.getQuotePos());
+				byte[] quoteBytes = getQuoteByteArray(recvData, replyCfg.getQuotePos());
+				Log.debug("引用内容：" + ByteUtils.byteArraytoHexString(quoteBytes));
 				List<String> quotePartNameList = replyCfg.getQuoteFieldName();
 				for (String quotePartName : quotePartNameList)
+				{
+					Log.debug("    字段：" + quotePartName + " | 值：" + ByteUtils.byteArraytoHexString(quoteBytes));
 					quoteMap.put(quotePartName, quoteBytes);
+				}
 				// 获取返回消息
 				byte[] data = sendData.getSendData(dataConfig.getProtocolConfig(replyCfg.getProtocol()), quoteMap);
+				Log.info("回复协议" + replyCfg.getProtocol() + "：" + ByteUtils.byteArraytoHexString(data));
 				connector.send(data);
 
-				recvList.clear();
+				// recvList.clear();
 			}
-		}//TODO:长短连接判断部分
+			
+			
+		} // TODO:长短连接判断部分
 	}
 
 	private byte[] getQuoteByteArray(byte[] request, Position quotePos)

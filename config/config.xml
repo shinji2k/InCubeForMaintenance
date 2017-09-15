@@ -4,7 +4,7 @@
 		<!-- socket or com -->
 		<type>socket</type>
 	</config>
-	
+
 	<com>
 		<!-- 串口号，注意：大小写敏感 -->
 		<port>COM3</port>
@@ -19,7 +19,7 @@
 		<!-- 对于奇校验来说，就是调整增加的那位，使8位二进制数中值位1的数总数有奇数个，偶校验反之 -->
 		<parity>none</parity>
 	</com>
-	
+
 	<socket>
 		<!-- server or client -->
 		<!-- 填写server或client -->
@@ -31,12 +31,13 @@
 		<port>7676</port>
 		<!-- 是否长连接, true或者false -->
 		<keepAlive>true</keepAlive>
-	</socket>
+	</socket>r
 
 	<protocol config="config\protocol-config-tower.xml">
 		<interval time="10000" protocol="alarm_report" />
-		<!-- <interval time="30000" protocol="status" />
-		<interval time="5000" protocol="alarm" /> -->
+		<interval time="5000" protocol="status" /> 
+		<!--<interval time="5000" protocol="alarm" /> 
+		-->
 		<response>
 			<field>15,18</field>
 			<value>00001f40</value>
@@ -44,9 +45,10 @@
 			<class>byte</class>
 			<pro>status</pro>
 			<quote>
-				<field name="id,id_desc">39,42</field>
+				<field name="sector-id,company-info">39,42</field>
 				<rule>response_id.rule</rule>
 			</quote>
 		</response>
+
 	</protocol>
 </root>

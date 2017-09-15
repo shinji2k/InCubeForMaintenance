@@ -172,7 +172,7 @@
 			<value>
 				<part name="deviceid-file" desc="设备id外接文件信息">
 					<type>random</type>
-					<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\deviceid.txt</value>
+					<value>data\deviceid.txt</value>
 					<split></split>
 					<fill-byte></fill-byte>
 					<fill-direction></fill-direction>
@@ -229,7 +229,7 @@
 							<value>
 								<part name="sectorid-file">
 									<type>random</type>
-									<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\sectorid.txt
+									<value>data\sectorid.txt
 									</value>
 									<split></split>
 									<fill-byte></fill-byte>
@@ -258,7 +258,7 @@
 							<value>
 								<part name="companyinfo-file">
 									<type>random</type>
-									<value>D:\WorkSpace\Java\Eclipse\SocketSend\data\companyinfo.txt
+									<value>data\companyinfo.txt
 									</value>
 									<split></split>
 									<fill-byte></fill-byte>
@@ -298,8 +298,8 @@
 			<value>
 				<part name="check-info" desc="生成校验的详细信息">
 					<type>xor</type>
-					<value>length,serials_no,pk_type,enum_state,content</value>
-					<split></split>
+					<value>type,version,deviceid,length,content</value>
+					<split>,</split>
 					<fill-byte></fill-byte>
 					<fill-direction></fill-direction>
 					<class></class>

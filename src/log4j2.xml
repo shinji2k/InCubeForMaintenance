@@ -6,17 +6,13 @@
 		<!--这个输出控制台的配置 -->
 		<Console name="Console" target="SYSTEM_OUT">
 			<!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch） -->
-			<ThresholdFilter level="debug" onMatch="ACCEPT"
-				onMismatch="DENY" />
+			<ThresholdFilter level="debug" onMatch="ACCEPT"	onMismatch="DENY" />
 			<!--这个都知道是输出日志的格式 -->
-			<PatternLayout
-				pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n" />
+			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n" />
 		</Console>
 		<!--这个会打印出所有的信息，日志会自动存入 -->
-		<RollingFile name="RollingFile" fileName="./logs/app.log"
-			filePattern="./logs/app-%d{yyyy-MM-dd}.log">
-			<PatternLayout
-				pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n" />
+		<RollingFile name="RollingFile" fileName="./logs/app.log" filePattern="./logs/app-%d{yyyy-MM-dd}.log">
+			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n" />
 			<Policies />
 		</RollingFile>
 	</appenders>

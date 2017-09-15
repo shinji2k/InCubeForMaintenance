@@ -70,12 +70,23 @@ public class ConfigHandler
 	{
 		List<ReplyConfig> replyCfgList = new ArrayList<ReplyConfig>();
 		List<Element> respEleList = xml.getElements("//response");
+		boolean nullReply = false;
+
 		Log.info("自动回复概况：");
+		// 缺少response节点
+		if (respEleList.size() == 0 || respEleList.get(0).elements().size() == 0)
+			nullReply = true;
 		for (int i = 0; i < respEleList.size(); i++)
 		{
 			ReplyConfig replyCfg = new ReplyConfig();
 			Element respEle = respEleList.get(i);
-			replyCfg.setField(respEle.element("field").getStringValue());
+			// response内没有子节点
+			if (respEle.elements().size() == 0)
+			{
+				nullReply = true;
+				break;
+			}
+			replyCfg.setField(respEle.elementTextTrim("field"));
 			replyCfg.setValue(respEle.elementTextTrim("value"));
 			replyCfg.setHead(respEle.elementTextTrim("head"));
 			replyCfg.setNodeClass(respEle.elementTextTrim("class"));
@@ -84,13 +95,16 @@ public class ConfigHandler
 			replyCfg.setQuoteFieldName(respEle.element("quote").element("field").attributeValue("name"));
 
 			replyCfgList.add(replyCfg);
-			
+
 			// 打印配置信息
-			Log.info("    当据请求的第" + replyCfg.getField() + "字节中内容为" + replyCfg.getValue() + "时回复协议：" + replyCfg.getProtocol());
+			Log.info("    当据请求的第" + replyCfg.getField() + "字节中内容为" + replyCfg.getValue() + "时回复协议："
+					+ replyCfg.getProtocol());
 			Log.info("    请求的报文头：" + replyCfg.getHead() + "，响应消息中的" + (String) replyCfg.getQuoteFieldName(String.class)
 					+ "字段使用请求中第" + replyCfg.getQuoteField() + "字节中的内容");
 		}
 
+		if (nullReply)
+			Log.info("   没有配置自动回复信息，不进行自动回复");
 
 		return replyCfgList;
 	}
@@ -119,7 +133,7 @@ public class ConfigHandler
 
 		return proSetting;
 	}
-	
+
 	/**
 	 * 返回协议配置列表
 	 * 
@@ -151,7 +165,7 @@ public class ConfigHandler
 
 		return proCfgList;
 	}
-	
+
 	public ProtocolConfig getProtocolConfig(String protocolName)
 	{
 		// 获取协议Element
@@ -162,10 +176,10 @@ public class ConfigHandler
 		ProtocolConfig protocol = new ProtocolConfig();
 		protocol.setProtocolName(protocolName);
 		protocol.setPart(partList);
-		
+
 		return protocol;
 	}
-	
+
 	/**
 	 * 将Part节点内容填充的实体
 	 * 
@@ -173,7 +187,7 @@ public class ConfigHandler
 	 * @return
 	 * @author zhaokai 2017年9月12日 下午12:37:06
 	 */
-	
+
 	private List<Part> fillPart(Element ele)
 	{
 		List<Part> partList = new ArrayList<Part>();

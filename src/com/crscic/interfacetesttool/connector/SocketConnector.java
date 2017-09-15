@@ -53,7 +53,7 @@ public class SocketConnector implements Connector
 	{
 		if (connector == null)
 		{
-
+			openConnect();
 		}
 		else
 		{
@@ -61,7 +61,6 @@ public class SocketConnector implements Connector
 			try
 			{
 				os = connector.getOutputStream();
-				Log.info("发送数据：" + ByteUtils.byteArraytoHexString(data));
 				os.write(data, 0, data.length);
 				os.flush();
 			}
@@ -99,11 +98,6 @@ public class SocketConnector implements Connector
 		os.flush();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.crscic.interfacetesttool.connector.Connector#startReply()
-	 */
 	@Override
 	public byte[] receive()
 	{
@@ -114,7 +108,7 @@ public class SocketConnector implements Connector
 			is = connector.getInputStream();
 			byte[] buff = new byte[1024];
 			List<Byte> recvData = new ArrayList<Byte>();
-			while (-1 != is.read(buff, 0, buff.length))
+			if (-1 != is.read(buff, 0, buff.length))
 			{
 				CollectionUtils.copyArrayToList(recvData, buff);
 			}
@@ -124,18 +118,6 @@ public class SocketConnector implements Connector
 		catch (IOException e)
 		{
 			Log.error("无法获取输入数据", e);
-		}
-		finally
-		{
-			try
-			{
-				if (is != null)
-					is.close();
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
 		}
 		return res;
 	}
@@ -175,11 +157,6 @@ public class SocketConnector implements Connector
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.crscic.interfacetesttool.connector.Connector#closeConnect()
-	 */
 	@Override
 	public void closeConnect() throws ConnectException
 	{

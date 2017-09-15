@@ -32,7 +32,7 @@ public class Data
 	private int fileRandomMem = 0;
 	private int fileLength = 0;
 	private List<PartMem> partMem; // 缓存需要补完的字段信息
-//	private Map<String, byte[]> quoteMap; // 缓存需要从请求中引用数据的字段和使用的数据
+	// private Map<String, byte[]> quoteMap; // 缓存需要从请求中引用数据的字段和使用的数据
 
 	public Data()
 	{
@@ -53,7 +53,8 @@ public class Data
 		else
 			fileOrderMem = 1;
 		// 引用类型
-//		this.quoteMap = new HashMap<String, byte[]>(); // TODO:quoteMap要放到参数中一起传进来
+		// this.quoteMap = new HashMap<String, byte[]>(); //
+		// TODO:quoteMap要放到参数中一起传进来
 
 		// 根据配置开始生成数据
 		Map<String, Byte[]> res = new LinkedHashMap<String, Byte[]>();
@@ -61,11 +62,8 @@ public class Data
 		{
 			String attrInfo = part.getAttribute().get("name");
 			byte[] b = null;
-			//是否是引用字段，需要引用请求中的内容
-			if (quoteMap.containsKey(attrInfo))
-				b = quoteMap.get(attrInfo);
-			else
-				b = getPartData(part);
+
+			b = getPartData(part, quoteMap);
 			res.put(attrInfo, CollectionUtils.byteToByte(b));
 		}
 		// 补完之前略过的内容
@@ -123,8 +121,7 @@ public class Data
 				b = getCheckData(mem, res);
 			res.put(mem.getName(), CollectionUtils.byteToByte(b));
 		}
-		
-		
+
 		partMem.clear();
 		return res;
 	}
@@ -145,7 +142,13 @@ public class Data
 		List<Byte> data = new ArrayList<Byte>();
 		for (String range : rangeList)
 		{
-			for (Byte b : content.get(range))
+			Byte[] rangeValue = content.get(range);
+			if (rangeValue == null)
+			{
+				Log.warn(range + "字段不在协议配置中");
+				return null;
+			}
+			for (Byte b : rangeValue)
 				data.add(b);
 		}
 
@@ -240,10 +243,18 @@ public class Data
 	 * @version 2017年3月1日 上午10:17:00
 	 * @throws AppException
 	 */
-	private byte[] getPartData(Part part) throws GenerateDataException
+	private byte[] getPartData(Part part, Map<String, byte[]> quoteMap) throws GenerateDataException
 	{
 		String typeString = part.getType();
 		byte[] b = null;
+
+		// 检查字段是否是引用字段,是的话直接赋值返回
+		String nodeName = part.getAttribute().get("name");
+		if (quoteMap.containsKey(nodeName))
+		{
+			b = quoteMap.get(nodeName);
+			return b;
+		}
 		if (typeString.equals("aptotic"))
 			b = getAptoticData(part);
 		else if (typeString.equals("file")) // 读取文件
@@ -252,7 +263,7 @@ public class Data
 			// 先将计算长度相关参数缓存，统一最后再计算
 			setPartMem(part);
 		else if (typeString.equals("generate"))// 递归
-			b = getGenerateData(part);
+			b = getGenerateData(part, quoteMap);
 		else if (typeString.equals("time")) // 时间格式
 			b = getTimeData(part);
 		else if (typeString.equals("random")) // 随机选取
@@ -260,7 +271,7 @@ public class Data
 		else if (typeString.equals("check")) // 校验码
 			setPartMem(part);
 		else
-			GenerateDataException.nullNodeValueException(part.getAttribute().get("name"), "type");
+			GenerateDataException.nullNodeValueException(nodeName, "type");
 		return b;
 
 	}
@@ -371,7 +382,7 @@ public class Data
 		return b;
 	}
 
-	private byte[] getGenerateData(Part target) throws GenerateDataException
+	private byte[] getGenerateData(Part target, Map<String, byte[]> quoteMap) throws GenerateDataException
 	{
 		List<Part> childPartList = target.getChildNodeList();
 		String splitString = null;
@@ -382,7 +393,7 @@ public class Data
 		List<Byte> res = new ArrayList<Byte>();
 		for (Part childPart : childPartList)
 		{
-			byte[] b = getPartData(childPart);
+			byte[] b = getPartData(childPart, quoteMap);
 			CollectionUtils.copyArrayToList(res, b);
 			CollectionUtils.copyArrayToList(res, split);
 		}

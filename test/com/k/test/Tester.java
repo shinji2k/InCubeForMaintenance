@@ -3,20 +3,14 @@
  */
 package com.k.test;
 
-import java.util.List;
-
-import org.dom4j.DocumentException;
 import org.junit.Test;
 
 import com.crscic.interfacetesttool.DataFactory;
+import com.crscic.interfacetesttool.SendService;
+import com.crscic.interfacetesttool.config.ConfigHandler;
 import com.crscic.interfacetesttool.config.ProtocolSetting;
 import com.crscic.interfacetesttool.connector.Connector;
-import com.crscic.interfacetesttool.data.Data;
-import com.crscic.interfacetesttool.data.ProtocolConfig;
 import com.crscic.interfacetesttool.exception.ConnectException;
-import com.crscic.interfacetesttool.exception.GenerateDataException;
-import com.crscic.interfacetesttool.exception.ParseXMLException;
-import com.k.util.ByteUtils;
 
 /**
  * 
@@ -30,12 +24,14 @@ public class Tester
 		try
 		{
 			DataFactory df = new DataFactory("config/config.xml");
-			// TODO: initConfig-getProtocolConfig
+			// 获取连接器
 			Connector conn = df.getConnector();
-
-			// TODO: initProtocol-getProtocolData one or more
-			// TODO: sendProtocol
-			conn.openConnect();
+			// 获取各种配置
+			ProtocolSetting proSetting = df.getProtocolSetting();
+			ConfigHandler dataCfg = df.getDataConfig(proSetting);
+			// 运行服务，包含发送和回复服务
+			SendService service = new SendService();
+			service.startService(conn, proSetting, dataCfg);
 			// TODO: initResponse
 			try
 			{

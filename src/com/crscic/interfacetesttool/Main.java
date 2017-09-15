@@ -19,10 +19,6 @@ import com.crscic.interfacetesttool.log.Log;
  */
 public class Main
 {
-	public void test()
-	{
-		Log.debug("test debug");
-	}
 	public static void main(String[] args)
 	{
 		try
