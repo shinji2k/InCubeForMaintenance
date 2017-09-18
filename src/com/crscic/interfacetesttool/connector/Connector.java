@@ -33,5 +33,7 @@ public interface Connector
 	 */
 	public void openConnect() throws ConnectException;
 	
+	public boolean isOpen();
+	
 	public void closeConnect() throws ConnectException;
 }

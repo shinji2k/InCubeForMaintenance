@@ -8,11 +8,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.TooManyListenersException;
 
 import com.crscic.interfacetesttool.config.ComConfig;
 import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.log.Log;
+import com.k.util.ByteUtils;
+import com.k.util.CollectionUtils;
 
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
@@ -44,15 +47,32 @@ public class ComConnector implements Connector
 		stopbit = comCfg.getStopbit();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.crscic.interfacetesttool.connector.Connector#start()
-	 */
 	@Override
-	public void send(byte[] data)
+	public void send(byte[] data) throws ConnectException
 	{
-		// TODO Auto-generated method stub
+		if (serialPort == null)
+			openConnect();
+
+		OutputStream out = null;
+		try
+		{
+
+			out = serialPort.getOutputStream();
+			out.write(data);
+			out.flush();
+
+		}
+		catch (IOException e)
+		{
+			ConnectException.throwWriteErr(e);
+		}
+		finally
+		{
+			/**
+			 * 暂时不关流看看 if (out != null) { try { out.close(); } catch
+			 * (IOException e) { e.printStackTrace(); } }
+			 **/
+		}
 
 	}
 
@@ -64,13 +84,14 @@ public class ComConnector implements Connector
 		try
 		{
 			// 通过端口名识别端口
+			Log.info("识别串口...");
 			CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(this.port);
 
-			Log.info("打开端口...");
+			Log.info("打开串口...");
 			// 打开端口，并给端口名字和一个timeout（打开操作的超时时间）
 			CommPort commPort = portIdentifier.open(this.port, 2000);
-			Log.info("端口打开成功");
-			
+			Log.info("串口打开成功");
+
 			// 判断是不是串口
 			if (commPort instanceof SerialPort)
 			{
@@ -80,12 +101,10 @@ public class ComConnector implements Connector
 				try
 				{
 					// 设置一下串口的波特率等参数
-					//SerialPort.DATABITS_8
-					//SerialPort.STOPBITS_1
-					serialPort.setSerialPortParams(Integer.parseInt(this.baudrate), 
-							Integer.parseInt(this.databit),
-							Integer.parseInt(this.stopbit),
-							getParity());
+					// SerialPort.DATABITS_8
+					// SerialPort.STOPBITS_1
+					serialPort.setSerialPortParams(Integer.parseInt(this.baudrate), Integer.parseInt(this.databit),
+							Integer.parseInt(this.stopbit), getParity());
 				}
 				catch (UnsupportedCommOperationException e)
 				{
@@ -107,7 +126,7 @@ public class ComConnector implements Connector
 			Log.error("端口被占用", e2);
 		}
 	}
-	
+
 	private int getParity()
 	{
 		int ret = SerialPort.PARITY_NONE;
@@ -143,54 +162,6 @@ public class ComConnector implements Connector
 		}
 
 		return portNameList;
-
-	}
-
-	/**
-	 * 往串口发送数据
-	 * 
-	 * @param serialPort
-	 *            串口对象
-	 * @param order
-	 *            待发送数据
-	 * @throws Exception
-	 * @throws SendDataToSerialPortFailure
-	 *             向串口发送数据失败
-	 * @throws SerialPortOutputStreamCloseFailure
-	 *             关闭串口对象的输出流出错
-	 */
-	public static void sendToPort(SerialPort serialPort, byte[] order) throws Exception
-	{
-
-		OutputStream out = null;
-
-		try
-		{
-
-			out = serialPort.getOutputStream();
-			out.write(order);
-			out.flush();
-
-		}
-		catch (IOException e)
-		{
-			throw new Exception();
-		}
-		finally
-		{
-			try
-			{
-				if (out != null)
-				{
-					out.close();
-					out = null;
-				}
-			}
-			catch (IOException e)
-			{
-				throw new Exception();
-			}
-		}
 
 	}
 
@@ -291,14 +262,58 @@ public class ComConnector implements Connector
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.crscic.interfacetesttool.connector.Connector#receive()
 	 */
 	@Override
 	public byte[] receive()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		InputStream is = null;
+		byte[] res = null;
+		try
+		{
+			is = serialPort.getInputStream();
+			byte[] buff = new byte[1024];
+			List<Byte> recvData = new ArrayList<Byte>();
+			if (-1 != is.read(buff, 0, buff.length))
+			{
+				CollectionUtils.copyArrayToList(recvData, buff);
+			}
+			res = CollectionUtils.toByteArray(recvData);
+			Log.info("接收：" + ByteUtils.byteArraytoHexString(res));
+		}
+		catch (IOException e)
+		{
+			Log.error("串口读取错误", e);
+		}
+		finally
+		{
+			try
+			{
+				if (is != null)
+				{
+					is.close();
+					is = null;
+				}
+			}
+			catch (IOException e)
+			{
+				Log.error("关闭输入流失败", e);
+			}
+
+		}
+
+		return res;
+	}
+
+	@Override
+	public boolean isOpen()
+	{
+		if (serialPort == null)
+			return false;
+		return true;
 	}
 
 }

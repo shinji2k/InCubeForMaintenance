@@ -11,7 +11,6 @@ import com.crscic.interfacetesttool.connector.Connector;
 import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.exception.GenerateDataException;
 import com.crscic.interfacetesttool.exception.ParseXMLException;
-import com.crscic.interfacetesttool.log.Log;
 
 /**
  * 

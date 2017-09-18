@@ -52,40 +52,36 @@ public class SocketConnector implements Connector
 	public void send(byte[] data) throws ConnectException
 	{
 		if (connector == null)
-		{
 			openConnect();
-		}
-		else
-		{
-			OutputStream os = null;
-			try
-			{
-				os = connector.getOutputStream();
-				os.write(data, 0, data.length);
-				os.flush();
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-			finally
-			{
-				if (!keepAlive)
-				{
-					if (os != null)
-					{
-						try
-						{
-							os.close();
-						}
-						catch (IOException e)
-						{
-							e.printStackTrace();
-						}
-					}
 
-					closeConnect();
+		OutputStream os = null;
+		try
+		{
+			os = connector.getOutputStream();
+			os.write(data, 0, data.length);
+			os.flush();
+		}
+		catch (IOException e)
+		{
+			ConnectException.throwWriteErr(e);
+		}
+		finally
+		{
+			if (!keepAlive)
+			{
+				if (os != null)
+				{
+					try
+					{
+						os.close();
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
 				}
+
+				closeConnect();
 			}
 		}
 	}
@@ -178,5 +174,14 @@ public class SocketConnector implements Connector
 			throw new ConnectException();
 		}
 
+	}
+
+
+	@Override
+	public boolean isOpen()
+	{
+		if (connector == null || connector.isClosed())
+			return false;
+		return true;
 	}
 }

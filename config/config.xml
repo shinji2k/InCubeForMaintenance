@@ -2,12 +2,12 @@
 <root>
 	<config>
 		<!-- socket or com -->
-		<type>socket</type>
+		<type>com</type>
 	</config>
 
 	<com>
 		<!-- 串口号，注意：大小写敏感 -->
-		<port>COM3</port>
+		<port>COM4</port>
 		<!-- 波特率 -->
 		<baudrate>9600</baudrate>
 		<!-- 数据位 -->
@@ -31,13 +31,13 @@
 		<port>7676</port>
 		<!-- 是否长连接, true或者false -->
 		<keepAlive>true</keepAlive>
-	</socket>r
+	</socket>
 
 	<protocol config="config\protocol-config-tower.xml">
 		<interval time="10000" protocol="alarm_report" />
 		<interval time="5000" protocol="status" /> 
 		<!--<interval time="5000" protocol="alarm" /> 
-		-->
+		
 		<response>
 			<field>15,18</field>
 			<value>00001f40</value>
@@ -49,6 +49,17 @@
 				<rule>response_id.rule</rule>
 			</quote>
 		</response>
-
+		-->
+		<response>
+			<field>4,5</field>
+			<value>3031</value>
+			<head>7E</head>
+			<class>byte</class>
+			<pro>status</pro>
+			<quote>
+				<field name="sector-id,company-info">2,5</field>
+				<rule>response_id.rule</rule>
+			</quote>
+		</response>
 	</protocol>
 </root>
