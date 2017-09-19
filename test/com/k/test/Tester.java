@@ -3,6 +3,11 @@
  */
 package com.k.test;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+
 import org.junit.Test;
 
 import com.crscic.interfacetesttool.DataFactory;
@@ -46,5 +51,48 @@ public class Tester
 		{
 
 		}
+	}
+
+	@Test
+	public void socketService()
+	{
+		ServerSocket server = null;
+		try
+		{
+			server = new ServerSocket(7676);
+			while (true)
+			{
+				try
+				{
+					Socket socket = server.accept();
+					System.out.println("Remote : " + socket.getRemoteSocketAddress());
+					while (true)
+					{
+						OutputStream os = socket.getOutputStream();
+						byte[] b = new byte[] { 0x01, 0x02, 0x03, 0x04 };
+						os.write(b);
+						os.flush();
+						
+						try
+						{
+							Thread.sleep(1000);
+						}
+						catch (InterruptedException e)
+						{
+							e.printStackTrace();
+						}
+					}
+				}
+				catch (IOException e)
+				{
+					System.out.println("reAccept");
+				}
+			}
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+
 	}
 }

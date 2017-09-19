@@ -275,10 +275,13 @@ public class ComConnector implements Connector
 		try
 		{
 			is = serialPort.getInputStream();
-			byte[] buff = new byte[1024];
 			List<Byte> recvData = new ArrayList<Byte>();
-			if (-1 != is.read(buff, 0, buff.length))
+			int len;
+			while ((len = is.available()) > 0 )
 			{
+				len = is.available();
+				byte[] buff = new byte[len];	//有可能存在读取数据不完整的情况。因为分包发送
+				is.read(buff, 0, len);
 				CollectionUtils.copyArrayToList(recvData, buff);
 			}
 			res = CollectionUtils.toByteArray(recvData);

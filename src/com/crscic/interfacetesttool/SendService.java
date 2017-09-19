@@ -24,13 +24,8 @@ import com.k.util.CollectionUtils;
  * 
  * @author zhaokai 2017年9月13日 下午4:57:09
  */
-public class SendService
+public class SendService implements Runnable
 {
-	public SendService()
-	{
-		super();
-	}
-
 	/**
 	 * 单独启动发送服务，根据配置向对端发送报文
 	 * 
@@ -95,7 +90,7 @@ public class SendService
 	 * @author ken_8 2017年9月18日 下午11:51:13
 	 */
 	public void startReplyService(Connector connector, ProtocolSetting proSetting, ConfigHandler dataConfig)
-	{//TODO：需要修改接收部分，改为循环接收
+	{//TODO: 需要单独调试一下socket的部分。com的整体还没做
 		try
 		{
 			if (!connector.isOpen())
@@ -363,4 +358,18 @@ public class SendService
 		return req;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Runnable#run()
+	 */
+	@Override
+	public void run()
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	public SendService()
+	{
+		super();
+	}
 }

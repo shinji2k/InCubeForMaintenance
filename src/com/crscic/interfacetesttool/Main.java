@@ -28,7 +28,8 @@ public class Main
 			Connector connector = factory.getConnector();
 
 			SendService service = new SendService();
-			service.startService(connector, proSetting, dataConfig);
+//			service.startService(connector, proSetting, dataConfig);
+			service.startReplyService(connector, proSetting, dataConfig);
 		}
 		catch (DocumentException e)
 		{
@@ -38,14 +39,14 @@ public class Main
 		{
 			e.printStackTrace();
 		}
-		catch (GenerateDataException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ConnectException e)
-		{
-			e.printStackTrace();
-		}
+//		catch (GenerateDataException e)
+//		{
+//			e.printStackTrace();
+//		}
+//		catch (ConnectException e)
+//		{
+//			e.printStackTrace();
+//		}
 
 	}
 }

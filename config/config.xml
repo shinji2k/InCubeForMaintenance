@@ -2,7 +2,7 @@
 <root>
 	<config>
 		<!-- socket or com -->
-		<type>com</type>
+		<type>socket</type>
 	</config>
 
 	<com>
@@ -26,7 +26,7 @@
 		<type>client</type>
 		<!-- if server, set null -->
 		<!-- 若为server，则此节点留空（需要保留节点） -->
-		<ip>10.3.3.178</ip>
+		<ip>127.0.0.1</ip>
 		<!-- 若为server，则此节点为监听端口；若为client，则此节点为连接服务器的端口 -->
 		<port>7676</port>
 		<!-- 是否长连接, true或者false -->
