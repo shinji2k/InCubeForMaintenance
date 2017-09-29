@@ -12,7 +12,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.crscic.interfacetesttool.config.SocketConfig;
+import com.crscic.interfacetesttool.config.SocketSetting;
 import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.log.Log;
 import com.k.util.ByteUtils;
@@ -32,7 +32,7 @@ public class SocketConnector implements Connector
 	private Socket connector;
 	private ServerSocket server;
 
-	public SocketConnector(SocketConfig sockCfg)
+	public SocketConnector(SocketSetting sockCfg)
 	{
 		this.type = sockCfg.getType();
 		this.ip = sockCfg.getIp();
@@ -95,30 +95,30 @@ public class SocketConnector implements Connector
 	}
 
 	@Override
-	public byte[] receive()
+	public List<Byte> receive()
 	{
 		InputStream is = null;
-		byte[] res = null;
+		List<Byte> recvData = null;
 		try
 		{
 			is = connector.getInputStream();
-			List<Byte> recvData = new ArrayList<Byte>();
-			int len;
-			while ((len = is.available()) > 0 )
+			recvData = new ArrayList<Byte>();
+			int len = 0;
+			while ((len = is.available()) > 0)
 			{
-				len = is.available();
-				byte[] buff = new byte[len];	//有可能存在读取数据不完整的情况。因为分包发送
-				is.read(buff, 0, len);
-				CollectionUtils.copyArrayToList(recvData, buff);
+				// 虽然几率较低，但仍有可能在从while的条件判断到read之间有新的数据进来，造成少取了数据
+				byte[] buff = new byte[len];
+				if (-1 != is.read(buff, 0, len))
+					CollectionUtils.copyArrayToList(recvData, buff);
 			}
-			res = CollectionUtils.toByteArray(recvData);
-			Log.info("接收：" + ByteUtils.byteArraytoHexString(res));
+			if (recvData.size() != 0)
+				Log.debug("接收：" + ByteUtils.byteToHexString(recvData));
 		}
 		catch (IOException e)
 		{
 			Log.error("无法获取输入数据", e);
 		}
-		return res;
+		return recvData;
 	}
 
 	/**
@@ -178,7 +178,6 @@ public class SocketConnector implements Connector
 		}
 
 	}
-
 
 	@Override
 	public boolean isOpen()

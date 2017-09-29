@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.crscic.interfacetesttool.config;
 
 import java.util.ArrayList;
@@ -9,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.dom4j.Attribute;
-import org.dom4j.DocumentException;
 import org.dom4j.Element;
 
 import com.crscic.interfacetesttool.data.Part;
@@ -17,7 +13,6 @@ import com.crscic.interfacetesttool.data.ProtocolConfig;
 import com.crscic.interfacetesttool.exception.ParseXMLException;
 import com.crscic.interfacetesttool.log.Log;
 import com.crscic.interfacetesttool.xmlhelper.XmlHelper;
-import com.k.util.StringUtils;
 
 /**
  * 
@@ -37,38 +32,59 @@ public class ConfigHandler
 		return xml.getSingleElement("/root/config/type").getStringValue();
 	}
 
-	public SocketConfig getSocketConfig()
+	public SocketSetting getSocketConfig()
 	{
 		Element socketNode = xml.getSingleElement("/root/socket");
-		return XmlHelper.fill(socketNode, SocketConfig.class);
+		return XmlHelper.fill(socketNode, SocketSetting.class);
 	}
 
-	public ComConfig getComConfig()
+	public ComSetting getComConfig()
 	{
 		Element comNode = xml.getSingleElement("/root/com");
-		return XmlHelper.fill(comNode, ComConfig.class);
+		return XmlHelper.fill(comNode, ComSetting.class);
 	}
 
-	public List<SendConfig> getSendConfig()
+	/**
+	 * 返回发送协议设置信息
+	 * 
+	 * @return
+	 * @author zhaokai 2017年9月27日 下午11:15:07
+	 */
+	public SendSetting getSendSetting()
 	{
 		// 发送配置
-		List<SendConfig> sendCfgList = new ArrayList<SendConfig>();
-		List<Element> proList = xml.getElements("//interval");
+		Element sendNode = xml.getSingleElement("/root/send");
+		if (sendNode == null)
+			return null;
+		List<Element> proList = XmlHelper.getElements(sendNode);
+		if (proList.size() == 0)
+			return null;
+
 		Log.info("协议概况：");
+		SendSetting sendSetting = new SendSetting();
+		// 协议路径
+		sendSetting.setSettingFilePath(sendNode.attributeValue("file"));
+		Map<String, Long> proMap = new HashMap<String, Long>();
+		List<String> protocolList = new ArrayList<String>();
 		for (int i = 0; i < proList.size(); i++)
 		{
-			SendConfig proCfg = new SendConfig();
-			proCfg.setInterval(proList.get(i).attributeValue("time"));
-			proCfg.setProtocol(proList.get(i).attributeValue("protocol"));
-			sendCfgList.add(proCfg);
-			Log.info("    协议" + (i + 1) + "：" + proCfg.getProtocol() + "，发送间隔：" + proCfg.getInterval() + "毫秒");
+			String protocol = proList.get(i).attributeValue("protocol");
+			protocolList.add(protocol);
+			Long interval = Long.parseLong(proList.get(i).attributeValue("time"));
+			proMap.put(protocol, interval);
+			Log.info("    协议" + (i + 1) + "：" + protocol + "，发送间隔：" + interval + "毫秒");
 		}
-		return sendCfgList;
+		sendSetting.setProtocolList(protocolList);
+		sendSetting.setProtocolMap(proMap);
+		return sendSetting;
 	}
 
-	public List<ReplyConfig> getReplyConfig()
+	public ReplySetting getReplySetting()
 	{
-		List<ReplyConfig> replyCfgList = new ArrayList<ReplyConfig>();
+		Element respNode = xml.getSingleElement("/root/reply");
+		if (respNode == null)
+			return null;
+		
 		List<Element> respEleList = xml.getElements("//response");
 		boolean nullReply = false;
 
@@ -76,9 +92,12 @@ public class ConfigHandler
 		// 缺少response节点
 		if (respEleList.size() == 0 || respEleList.get(0).elements().size() == 0)
 			nullReply = true;
+		ReplySetting replySetting = new ReplySetting();
+		replySetting.setSettingFilePath(respNode.attributeValue("file"));
+		List<Response> responseList = new ArrayList<Response>();
 		for (int i = 0; i < respEleList.size(); i++)
 		{
-			ReplyConfig replyCfg = new ReplyConfig();
+			Response response = new Response();
 			Element respEle = respEleList.get(i);
 			// response内没有子节点
 			if (respEle.elements().size() == 0)
@@ -86,52 +105,29 @@ public class ConfigHandler
 				nullReply = true;
 				break;
 			}
-			replyCfg.setField(respEle.elementTextTrim("field"));
-			replyCfg.setValue(respEle.elementTextTrim("value"));
-			replyCfg.setHead(respEle.elementTextTrim("head"));
-			replyCfg.setNodeClass(respEle.elementTextTrim("class"));
-			replyCfg.setProtocol(respEle.elementTextTrim("pro"));
-			replyCfg.setQuoteField(respEle.element("quote").element("field").getTextTrim());
-			replyCfg.setQuoteFieldName(respEle.element("quote").element("field").attributeValue("name"));
+			response.setField(respEle.elementTextTrim("field"));
+			response.setValue(respEle.elementTextTrim("value"));
+			response.setHead(respEle.elementTextTrim("head"));
+			response.setTail(respEle.elementTextTrim("tail"));
+			response.setNodeClass(respEle.elementTextTrim("class"));
+			response.setProtocol(respEle.elementTextTrim("pro"));
+			response.setQuoteField(respEle.element("quote").element("field").getTextTrim());
+			response.setQuoteFieldName(respEle.element("quote").element("field").attributeValue("name"));
 
-			replyCfgList.add(replyCfg);
+			responseList.add(response);
 
 			// 打印配置信息
-			Log.info("    当据请求的第" + replyCfg.getField() + "字节中内容为" + replyCfg.getValue() + "时回复协议："
-					+ replyCfg.getProtocol());
-			Log.info("    请求的报文头：" + replyCfg.getHead() + "，响应消息中的" + (String) replyCfg.getQuoteFieldName(String.class)
-					+ "字段使用请求中第" + replyCfg.getQuoteField() + "字节中的内容");
+			Log.info("    当据请求的第" + response.getField() + "字节中内容为" + response.getValue() + "时回复协议："
+					+ response.getProtocol());
+			Log.info("    请求的报文头：" + response.getHead() + "，请求的报文尾：" + response.getTail() + ", 响应消息中的"
+					+ (String) response.getQuoteFieldName(String.class) + "字段使用请求中第" + response.getQuoteField()
+					+ "字节中的内容");
 		}
-
+		replySetting.setResponseList(responseList);
 		if (nullReply)
 			Log.info("   没有配置自动回复信息，不进行自动回复");
 
-		return replyCfgList;
-	}
-
-	/**
-	 * 获取程序配置中有关协议的部分
-	 * 
-	 * @return
-	 * @author ken_8 2017年9月12日 上午12:25:04
-	 * @throws ParseXMLException
-	 */
-	public ProtocolSetting getProtocolSetting() throws ParseXMLException
-	{
-		ProtocolSetting proSetting = new ProtocolSetting();
-		proSetting.setProFilePath(xml.getSingleElement("/root/protocol").attributeValue("config"));
-
-		if (StringUtils.isNullOrEmpty(proSetting.getProFilePath()))
-		{
-			Log.error("协议配置文件路径为空");
-			throw new ParseXMLException();
-		}
-
-		Log.info("协议文件路径：" + proSetting.getProFilePath());
-		proSetting.setSendConfig(getSendConfig());
-		proSetting.setReplyConfig(getReplyConfig());
-
-		return proSetting;
+		return replySetting;
 	}
 
 	/**
@@ -140,36 +136,34 @@ public class ConfigHandler
 	 * @param config
 	 * @return
 	 * @throws ParseXMLException
-	 * @author zhaokai 2017年9月12日 下午12:37:38
+	 * @author zhaokai
+	 * @date 2017年9月12日 下午12:37:38
 	 */
-	public List<ProtocolConfig> getProtocolConfigList(ProtocolSetting config) throws ParseXMLException
+	public List<ProtocolConfig> getProtocolConfigList(List<String> protocolList) throws ParseXMLException
 	{
 		List<ProtocolConfig> proCfgList = new ArrayList<ProtocolConfig>();
-		try
+		if (protocolList.size() == 0)
+			return proCfgList;
+		Log.info("正在获取协议配置...");
+		// 获取发送协议
+		for (String protocol : protocolList)
 		{
-			xml.loadXml(config.getProFilePath());
-			Log.info("正在生成协议数据...");
-			// 获取发送协议
-			for (SendConfig pro : config.getSendConfig())
-			{
-				Log.info("协议：" + pro.getProtocol() + ":");
-				ProtocolConfig protocol = getProtocolConfig(pro.getProtocol());
-				proCfgList.add(protocol);
-			}
+			ProtocolConfig pro = getProtocolConfig(protocol);
+			proCfgList.add(pro);
 		}
-		catch (DocumentException e)
-		{
-			Log.error("读取协议配置文件错误", e);
-			throw new ParseXMLException();
-		}
-
 		return proCfgList;
 	}
 
-	public ProtocolConfig getProtocolConfig(String protocolName)
+	public ProtocolConfig getProtocolConfig(String protocolName) throws ParseXMLException
 	{
 		// 获取协议Element
+		Log.debug("获取协议 ： " + protocolName);
 		Element proEle = xml.getSingleElement("/root/" + protocolName);
+		if (proEle == null)
+		{
+			Log.error("找不到协议：" + protocolName);
+			throw new ParseXMLException();
+		}
 		// 填装协议配置实体
 		List<Part> partList = fillPart(proEle);
 

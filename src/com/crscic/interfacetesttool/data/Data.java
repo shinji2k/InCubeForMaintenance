@@ -52,9 +52,6 @@ public class Data
 			fileOrderMem = proFileOrderMem.get(proConfig.getProtocolName());
 		else
 			fileOrderMem = 1;
-		// 引用类型
-		// this.quoteMap = new HashMap<String, byte[]>(); //
-		// TODO:quoteMap要放到参数中一起传进来
 
 		// 根据配置开始生成数据
 		Map<String, Byte[]> res = new LinkedHashMap<String, Byte[]>();
@@ -69,8 +66,14 @@ public class Data
 		// 补完之前略过的内容
 		res = reFilling(res);
 		List<Byte> resTmpList = new ArrayList<Byte>();
-		for (Byte[] fieldValueArray : res.values())
+		for (String key : res.keySet())
 		{
+			Byte[] fieldValueArray = res.get(key);
+			if (fieldValueArray == null)
+			{
+				Log.warn(key + "字段内容为空");
+				continue;
+			}
 			for (Byte fieldValue : fieldValueArray)
 				resTmpList.add(fieldValue);
 		}
@@ -113,11 +116,8 @@ public class Data
 		// 循环填充其他需要补完的字段，目前主要是校验
 		for (PartMem mem : partMem)
 		{
-			String childTypeString = mem.getChildType();
-			byte[] b = null;
-			if (childTypeString.equals("xor"))
-				b = getCheckData(mem, res);
-			else if (childTypeString.equals("crc"))
+			byte[] b = getCheckData(mem, res);
+			if (mem.getType().equals("check"))
 				b = getCheckData(mem, res);
 			res.put(mem.getName(), CollectionUtils.byteToByte(b));
 		}
@@ -154,63 +154,12 @@ public class Data
 
 		byte[] b = null;
 		if (mem.getChildType().equals("xor"))
-			b = getXorData(data);
+			b = Encryption.getXorData(data);
 		else if (mem.getChildType().equals("crc"))
-			b = getCrcData(data);
-
+			b = Encryption.getCrcData(data);
+		else if (mem.getChildType().equals("chksum"))
+			b = Encryption.getChkSum(data);
 		return b;
-	}
-
-	/**
-	 * 获取CRC校验，长度2字节。采用CRC-16/MODBUS（x16+x15+x2+1）加密
-	 *
-	 * @param data
-	 * @return
-	 * @author zhaokai
-	 * @version 2017年4月2日 上午9:57:20
-	 */
-	private byte[] getCrcData(List<Byte> data)
-	{
-		int len = data.size();
-
-		// 预置 1 个 16 位的寄存器为十六进制FFFF, 称此寄存器为 CRC寄存器。
-		int crc = 0xFFFF;
-		int i, j;
-		for (i = 0; i < len; i++)
-		{
-			// 把第一个 8 位二进制数据 与 16 位的 CRC寄存器的低 8 位相异或, 把结果放于 CRC寄存器
-			crc = ((crc & 0xFF00) | (crc & 0x00FF) ^ (data.get(i) & 0xFF));
-			for (j = 0; j < 8; j++)
-			{
-				// 把 CRC 寄存器的内容右移一位( 朝低位)用 0 填补最高位, 并检查右移后的移出位
-				if ((crc & 0x0001) > 0)
-				{
-					// 如果移出位为 1, CRC寄存器与多项式A001进行异或
-					crc = crc >> 1;
-					crc = crc ^ 0xA001;
-				}
-				else
-					// 如果移出位为 0,再次右移一位
-					crc = crc >> 1;
-			}
-		}
-		return ByteUtils.swapHighLow(crc);
-	}
-
-	/**
-	 * 异或校验
-	 * 
-	 * @author ken_8
-	 * @version : 2017年3月3日,下午11:23:54
-	 * @param data
-	 * @return
-	 */
-	private byte[] getXorData(List<Byte> data)
-	{
-		byte xor = 0;
-		for (int i = 0; i < data.size(); i++)
-			xor ^= data.get(i);
-		return new byte[] { xor };
 	}
 
 	/**
@@ -227,11 +176,37 @@ public class Data
 		for (String range : rangeList)
 		{
 			if (range.equals("length"))
-				len += 4;
+				len += 4; // 若包含字段自己本身的话，则长度加4字节。（4字节这事儿先这么定，如果需要改为读一下字段长度)
 			else
 				len += content.get(range).length;
 		}
-		return ByteUtils.intToByteArray(len);
+		// 根据子节点中的type字段判断，长度数据的计算方式
+		byte[] lenData = null;
+		if (mem.getChildType().equals("length"))
+			lenData = ByteUtils.intToByteArray(len);
+		else if (mem.getChildType().equals("lenid+lchksum"))
+			lenData = getLenIdAndLChkSum(len);
+		return lenData;
+	}
+
+	/**
+	 * 生成lenid + lchksum这种形式的长度数据
+	 * 
+	 * @return
+	 * @author ken_8 2017年9月23日 下午10:42:18
+	 */
+	private byte[] getLenIdAndLChkSum(int len)
+	{
+		byte[] lenid = new byte[3];
+		lenid[0] = (byte) (len >> 8 & 0xF);
+		lenid[1] = (byte) (len >> 4 & 0xF);
+		lenid[2] = (byte) (len & 0xF);
+		byte lchkSum = Encryption.getLChkSum(lenid);
+		byte[] lenData = new byte[4];
+		lenData[0] = lchkSum;
+		for (int i = 0; i < lenid.length; i++)
+			lenData[i + 1] = Encryption.ASCII[lenid[i]];
+		return lenData;
 	}
 
 	/**
@@ -255,6 +230,8 @@ public class Data
 			b = quoteMap.get(nodeName);
 			return b;
 		}
+
+		// 根据节点类型分别生成数据
 		if (typeString.equals("aptotic"))
 			b = getAptoticData(part);
 		else if (typeString.equals("file")) // 读取文件
@@ -295,8 +272,8 @@ public class Data
 			String fillDirectionString = part.getFillDirection();
 			b = doFill(b, fillByteString, fillDirectionString, len);
 		}
-		if (len > 0 && (b.length != len || b.length > len))
-			Log.warn("生成数据的长度与配置中不一致");
+		if (len > 0 && b.length != len)
+			Log.warn(part.getAttribute().get("name") + "节点生成数据的长度与配置中不一致");
 		return b;
 	}
 
@@ -382,12 +359,12 @@ public class Data
 		return b;
 	}
 
-	private byte[] getGenerateData(Part target, Map<String, byte[]> quoteMap) throws GenerateDataException
+	private byte[] getGenerateData(Part part, Map<String, byte[]> quoteMap) throws GenerateDataException
 	{
-		List<Part> childPartList = target.getChildNodeList();
+		List<Part> childPartList = part.getChildNodeList();
 		String splitString = null;
 		byte[] split = null;
-		splitString = getSplitString(target.getSplit());
+		splitString = getSplitString(part.getSplit());
 		if (!StringUtils.isNullOrEmpty(splitString))
 			split = ByteUtils.getBytes(splitString);
 		List<Byte> res = new ArrayList<Byte>();
@@ -400,9 +377,8 @@ public class Data
 		// 去掉末尾的分隔符
 		int resLen = res.size();
 		if (split != null)
-		{
 			resLen = res.size() - split.length;
-		}
+
 		byte[] ret = new byte[resLen];
 		for (int i = 0; i < resLen; i++)
 			ret[i] = res.get(i);
@@ -460,8 +436,20 @@ public class Data
 		// 对给定范围内的值进行随机
 		String[] randomArray = valueString.split(splitString);
 		Random r = new Random();
-		int randomIndex = r.nextInt(randomArray.length);
-		String res = randomArray[randomIndex];
+		String res = null;
+		//不同的随机方式
+		if (splitString.equals(","))
+		{
+			int randomIndex = r.nextInt(randomArray.length);
+			res = randomArray[randomIndex];
+		}
+		else if (splitString.equals("-"))
+		{
+			int min = Integer.parseInt(randomArray[0]);
+			int max = Integer.parseInt(randomArray[1]);
+			int random = r.nextInt(max) % (max - min + 1) + min;
+			res = Integer.toString(random);
+		}
 
 		byte[] b = null;
 		// class节点，先取得随机数后在判断class
@@ -498,7 +486,7 @@ public class Data
 	{
 		// value中子part检查
 		List<Part> childPartList = part.getChildNodeList();
-		if (childPartList.size() != 1)
+		if (childPartList.size() == 0)
 		{
 			Log.error(part.getAttribute().get("name") + "节点缺少子节点");
 			throw new GenerateDataException();
@@ -506,7 +494,7 @@ public class Data
 
 		Part childPart = childPartList.get(0);
 		// 最后组装时，检查flag的值，true的需要进行组装
-		// 取父part的属性作为flag的key，最后组装根据该part确定替换那部分的值
+		// 取父part的属性作为flag的key，最后组装根据该part确定替换哪部分的值
 		String partName = part.getAttribute().get("name");
 		// 检查子Part中type节点,并存入flag，补完时判断用
 		String childTypeString = childPart.getType();
@@ -514,6 +502,7 @@ public class Data
 			GenerateDataException.nullNodeValueException(partName, "type");
 		PartMem mem = new PartMem();
 		mem.setName(partName);
+		mem.setType(part.getType());
 		mem.setChildType(childTypeString);
 		// length检查
 		String lenString = part.getLen();
@@ -568,23 +557,45 @@ public class Data
 	private byte[] getByteArrayByClass(String src, String classString)
 	{
 		byte[] b = null;
-		if (classString != null)
+		if (classString == null)
 		{
-			if (classString.equals("byte"))
-			{
-				b = ByteUtils.hexStringToBytes(src);
-			}
-			else if (classString.equals("float"))
-			{
-				Float f = new Float(Float.parseFloat(src) * 100);
-				// 按照铁标只需要float乘以100发送，不需要转int
-				// b = ByteUtils.getBytes(f);
-				b = ByteUtils.getBytes(f.intValue());
-			}
-			else
-			{
-				b = ByteUtils.getBytes(src);
-			}
+			b = ByteUtils.getBytes(src);
+		}
+		classString = classString.trim().toLowerCase();
+
+		if (classString.equals("byte"))
+		{
+			b = ByteUtils.hexStringToBytes(src);
+		}
+		else if (classString.equals("float"))
+		{
+			Float f = new Float(Float.parseFloat(src) * 100);
+			// 按照铁标只需要float乘以100发送，不需要转int
+			// b = ByteUtils.getBytes(f);
+			b = ByteUtils.getBytes(f.intValue());
+		}
+		else if (classString.equals("hextobyte"))
+		{
+			String hexString = ByteUtils.byteToHexString(src.getBytes());
+			hexString = hexString.replaceAll(" ", "");
+			b = ByteUtils.getBytes(hexString);
+		}
+		else if (classString.equals("hextoasc"))
+		{
+			b = ByteUtils.getBytes(src);
+		}
+		else if (classString.toLowerCase().equals("inttobytetoasc"))
+		{
+			byte[] intByte = ByteUtils.getBytes(Integer.parseInt(src)); // 返回的是4字节的数组
+			// 为适用A接口，将4字节缩为2字节
+			b = new byte[2];
+			b[0] = (byte) ((intByte[0] << 8) | intByte[1]);
+			b[1] = (byte) ((intByte[2] << 8) | intByte[3]);
+			b = ByteUtils.byteToAsc(b);
+		}
+		else
+		{
+			b = ByteUtils.getBytes(src);
 		}
 		return b;
 	}

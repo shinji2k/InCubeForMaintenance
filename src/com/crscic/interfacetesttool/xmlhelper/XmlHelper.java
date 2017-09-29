@@ -17,20 +17,20 @@ public class XmlHelper
 {
 	private SAXReader saxReader;
 	private Document xmlDocument;
-	
+
 	public void loadXml(String xmlPath) throws DocumentException
 	{
 		saxReader = new SAXReader();
 		xmlDocument = saxReader.read(xmlPath);
 	}
-	
+
 	public Element getSingleElement(String xpath)
 	{
 		if (StringUtils.isNullOrEmpty(xpath))
 			return null;
 		return (Element) xmlDocument.selectSingleNode(xpath);
 	}
-	
+
 	public List<Element> getElements(String xpath)
 	{
 		if (StringUtils.isNullOrEmpty(xpath))
@@ -41,30 +41,36 @@ public class XmlHelper
 			res.add((Element) elements.get(i));
 		return res;
 	}
-	
+
+	/**
+	 * 获得节点下所有子节点
+	 * 
+	 * @param ele
+	 * @return 
+	 * zhaokai 
+	 * 2017年9月27日 下午11:20:03
+	 */
 	public static List<Element> getElements(Element ele)
 	{
-		List<Element> childEleList = new ArrayList<Element>();;
+		List<Element> childEleList = new ArrayList<Element>();
 		List<?> elements = ele.elements();
-		if (elements.size() > 0)
-		{
-			for (int i = 0; i < elements.size(); i++)
-				childEleList.add((Element) elements.get(i));
-		}
-		
+		for (int i = 0; i < elements.size(); i++)
+			childEleList.add((Element) elements.get(i));
+
 		return childEleList;
 	}
-	
+
 	public static List<Attribute> getAttributes(Element ele)
 	{
-		List<Attribute> attrList = new ArrayList<Attribute>();;
+		List<Attribute> attrList = new ArrayList<Attribute>();
+		;
 		List<?> attrObjList = ele.attributes();
 		if (attrObjList.size() > 0)
 		{
 			for (int i = 0; i < attrObjList.size(); i++)
 				attrList.add((Attribute) attrObjList.get(i));
 		}
-		
+
 		return attrList;
 	}
 
@@ -84,7 +90,7 @@ public class XmlHelper
 			ret = t.newInstance();
 			List<?> elements = element.elements();
 			List<Element> nodeList = new ArrayList<Element>();
-			for(int i = 0; i < elements.size(); i++)
+			for (int i = 0; i < elements.size(); i++)
 				nodeList.add((Element) elements.get(i));
 
 			for (Element node : nodeList)
@@ -99,7 +105,7 @@ public class XmlHelper
 		}
 		catch (IllegalArgumentException e)
 		{
- 			e.printStackTrace();
+			e.printStackTrace();
 		}
 		catch (InvocationTargetException e)
 		{

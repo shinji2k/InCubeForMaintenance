@@ -5,6 +5,7 @@ package com.crscic.interfacetesttool.connector;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.List;
 
 import com.crscic.interfacetesttool.exception.ConnectException;
 
@@ -22,7 +23,7 @@ public interface Connector
 	 * 2017年9月10日 下午2:12:34
 	 */
 	public void send(byte[] data) throws ConnectException;
-	public byte[] receive();
+	public List<Byte> receive();
 	
 	/**
 	 * 建立连接

@@ -8,7 +8,7 @@ package com.crscic.interfacetesttool.config;
  * 
  * @author zhaokai 2017年9月6日 下午6:27:59
  */
-public class SocketConfig
+public class SocketSetting
 {
 	private String type;
 	private String ip;

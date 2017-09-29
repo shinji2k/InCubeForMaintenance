@@ -1,11 +1,15 @@
 package com.crscic.interfacetesttool;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.dom4j.DocumentException;
 
 import com.crscic.interfacetesttool.config.ConfigHandler;
-import com.crscic.interfacetesttool.config.ProtocolSetting;
+import com.crscic.interfacetesttool.config.ReplySetting;
+import com.crscic.interfacetesttool.config.Response;
+import com.crscic.interfacetesttool.config.SendSetting;
 import com.crscic.interfacetesttool.connector.ComConnector;
 import com.crscic.interfacetesttool.connector.Connector;
 import com.crscic.interfacetesttool.connector.SocketConnector;
@@ -18,7 +22,7 @@ import com.crscic.interfacetesttool.xmlhelper.XmlHelper;
 
 public class DataFactory
 {
-	private ConfigHandler setting;
+	private static ConfigHandler setting;
 	private Connector connector;
 	private XmlHelper configXml;
 
@@ -37,6 +41,8 @@ public class DataFactory
 	 */
 	public Connector getConnector() throws DocumentException
 	{
+		if (setting == null)
+			setting = new ConfigHandler(configXml);
 		if (setting.getConnectType().toLowerCase().equals("socket"))
 			connector = new SocketConnector(setting.getSocketConfig());
 		else if (setting.getConnectType().toLowerCase().equals("com"))
@@ -44,20 +50,35 @@ public class DataFactory
 
 		return connector;
 	}
-	
+
 	/**
-	 * 获取程序配置
+	 * 获取发送接口的配置信息
+	 * 
 	 * @return
-	 * @throws ParseXMLException
 	 * @author zhaokai
-	 * 2017年9月13日 下午5:31:15
+	 * @date 2017年9月28日 下午10:53:15
 	 */
-	public ProtocolSetting getProtocolSetting() throws ParseXMLException
+	public SendSetting getSendSetting()
 	{
-		setting = new ConfigHandler(configXml);
-		return setting.getProtocolSetting();
+		if (setting == null)
+			setting = new ConfigHandler(configXml);
+		return setting.getSendSetting();
 	}
-	
+
+	/**
+	 * 获取回复接口的配置信息
+	 * 
+	 * @return
+	 * @author zhaokai
+	 * @date 2017年9月28日 下午10:52:52
+	 */
+	public ReplySetting getReplySetting()
+	{
+		if (setting == null)
+			setting = new ConfigHandler(configXml);
+		return setting.getReplySetting();
+	}
+
 	/**
 	 * 生成发送数据
 	 * 
@@ -71,18 +92,43 @@ public class DataFactory
 	}
 
 	/**
-	 * 获取协议配置
+	 * 获取协议配置文件中的协议字段配置信息
+	 * 
+	 * @param settingFilePath
+	 * @param responseList
 	 * @return
+	 * @author zhaokai
 	 * @throws DocumentException
 	 * @throws ParseXMLException
-	 * @author ken_8
-	 * 2017年9月14日 上午12:30:20
+	 * @date 2017年9月29日 下午6:36:05
 	 */
-	public ConfigHandler getDataConfig(ProtocolSetting proSetting) throws DocumentException, ParseXMLException
+	public <T> List<ProtocolConfig> getDataConfig(String settingFilePath, List<T> entityList)
+			throws DocumentException, ParseXMLException
 	{
+		List<ProtocolConfig> proCfgList = null;
+		if (entityList.size() == 0)
+			return proCfgList;
+		List<String> protocolList = new ArrayList<String>();
+		if (entityList.get(0).getClass().getSimpleName().equals("String"))
+		{
+			for (int i = 0; i < entityList.size(); i++)
+				protocolList.add((String) entityList.get(i));
+		}
+		else if (entityList.get(0).getClass().getSimpleName().equals("Response"))
+		{
+			for (int i = 0; i < entityList.size(); i++)
+			{
+				Response response = (Response) entityList.get(i);
+				protocolList.add(response.getProtocol());
+			}
+		}
+
 		XmlHelper dataXml = new XmlHelper();
-		dataXml.loadXml(proSetting.getProFilePath());
+		dataXml.loadXml(settingFilePath);
 		ConfigHandler dataConfig = new ConfigHandler(dataXml);
-		return dataConfig;
+
+		proCfgList = dataConfig.getProtocolConfigList(protocolList);
+		return proCfgList;
 	}
+
 }

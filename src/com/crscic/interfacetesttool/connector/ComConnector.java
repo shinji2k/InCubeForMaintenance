@@ -11,7 +11,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.TooManyListenersException;
 
-import com.crscic.interfacetesttool.config.ComConfig;
+import com.crscic.interfacetesttool.config.ComSetting;
 import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.log.Log;
 import com.k.util.ByteUtils;
@@ -38,7 +38,7 @@ public class ComConnector implements Connector
 	private String stopbit;
 	private SerialPort serialPort;
 
-	public ComConnector(ComConfig comCfg)
+	public ComConnector(ComSetting comCfg)
 	{
 		port = comCfg.getPort();
 		baudrate = comCfg.getBaudrate();
@@ -268,24 +268,24 @@ public class ComConnector implements Connector
 	 * @see com.crscic.interfacetesttool.connector.Connector#receive()
 	 */
 	@Override
-	public byte[] receive()
+	public List<Byte> receive()
 	{
 		InputStream is = null;
-		byte[] res = null;
+		List<Byte> recvData = null;
 		try
 		{
 			is = serialPort.getInputStream();
-			List<Byte> recvData = new ArrayList<Byte>();
-			int len;
-			while ((len = is.available()) > 0 )
+			recvData = new ArrayList<Byte>();
+			int len = 0;
+			while ((len = is.available()) > 0)
 			{
-				len = is.available();
-				byte[] buff = new byte[len];	//有可能存在读取数据不完整的情况。因为分包发送
-				is.read(buff, 0, len);
-				CollectionUtils.copyArrayToList(recvData, buff);
+				// 虽然几率较低，但仍有可能在从while的条件判断到read之间有新的数据进来，造成少取了数据
+				byte[] buff = new byte[len];
+				if (-1 != is.read(buff, 0, len))
+					CollectionUtils.copyArrayToList(recvData, buff);
 			}
-			res = CollectionUtils.toByteArray(recvData);
-			Log.info("接收：" + ByteUtils.byteArraytoHexString(res));
+			if (recvData.size() != 0)
+				Log.debug("接收：" + ByteUtils.byteToHexString(recvData));
 		}
 		catch (IOException e)
 		{
@@ -308,7 +308,7 @@ public class ComConnector implements Connector
 
 		}
 
-		return res;
+		return recvData;
 	}
 
 	@Override

@@ -12,34 +12,34 @@ import java.util.List;
  */
 public class ProtocolSetting
 {
-	private List<SendConfig> sendConfig;
-	private List<ReplyConfig> replyConfig;
+	private List<SendSetting> sendConfig;
+	private List<ReplySetting> replyConfig;
 	private String proFilePath;
 	/**
 	 * @return the sendConfig
 	 */
-	public List<SendConfig> getSendConfig()
+	public List<SendSetting> getSendConfig()
 	{
 		return sendConfig;
 	}
 	/**
 	 * @param sendConfig the sendConfig to set
 	 */
-	public void setSendConfig(List<SendConfig> sendConfig)
+	public void setSendConfig(List<SendSetting> sendConfig)
 	{
 		this.sendConfig = sendConfig;
 	}
 	/**
 	 * @return the replyConfig
 	 */
-	public List<ReplyConfig> getReplyConfig()
+	public List<ReplySetting> getReplyConfig()
 	{
 		return replyConfig;
 	}
 	/**
 	 * @param replyConfig the replyConfig to set
 	 */
-	public void setReplyConfig(List<ReplyConfig> replyConfig)
+	public void setReplyConfig(List<ReplySetting> replyConfig)
 	{
 		this.replyConfig = replyConfig;
 	}

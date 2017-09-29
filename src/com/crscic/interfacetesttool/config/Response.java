@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.crscic.interfacetesttool.config;
 
 import java.util.ArrayList;
@@ -11,9 +8,9 @@ import com.crscic.interfacetesttool.entity.Position;
 /**
  * @author zhaokai
  *
- * 2017年9月11日 上午10:23:58
+ * 2017年9月28日 下午10:56:14
  */
-public class ReplyConfig
+public class Response
 {
 	/**
 	 * 截取请求中的字段位置，逗号分隔起止
@@ -24,6 +21,7 @@ public class ReplyConfig
 	 */
 	private String value;
 	private String head;
+	private String tail;
 	//"class"
 	private String nodeClass;
 	private String protocol;
@@ -35,6 +33,10 @@ public class ReplyConfig
 	 * 引用字段对应发送数据协议中的字段名称
 	 */
 	private List<String> quoteFieldName;
+	
+	
+	
+	
 	
 	public void setQuoteField(String field)
 	{
@@ -189,4 +191,21 @@ public class ReplyConfig
 	{
 		this.quoteFieldName = quoteFieldName;
 	}
+
+	/**
+	 * @return the tail
+	 */
+	public String getTail()
+	{
+		return tail;
+	}
+
+	/**
+	 * @param tail the tail to set
+	 */
+	public void setTail(String tail)
+	{
+		this.tail = tail;
+	}
+
 }

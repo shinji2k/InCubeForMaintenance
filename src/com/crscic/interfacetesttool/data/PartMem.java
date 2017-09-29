@@ -2,8 +2,6 @@ package com.crscic.interfacetesttool.data;
 
 import java.util.List;
 
-import org.dom4j.Element;
-
 /**
  * 缓存节点信息，当时不完成生成，将节点信息缓存，留置二次填充时进行生成
  * 
@@ -13,9 +11,13 @@ import org.dom4j.Element;
 public class PartMem
 {
 	/**
+	 * 节点类型
+	 */
+	private String type;
+	/**
 	 * 子节点
 	 */
-	private Element childPart;
+	private Part childPart;
 
 	/**
 	 * 当前节点长度
@@ -43,14 +45,9 @@ public class PartMem
 	private String name;
 
 	/**
-	 * 
+	 * 拆分后的计算范围List
 	 */
 	private List<String> rangeList;
-
-	public Element getChildPart()
-	{
-		return childPart;
-	}
 
 	public List<String> getRangeList()
 	{
@@ -60,11 +57,6 @@ public class PartMem
 	public void setRangeList(List<String> rangeList)
 	{
 		this.rangeList = rangeList;
-	}
-
-	public void setChildPart(Element childPart)
-	{
-		this.childPart = childPart;
 	}
 
 	public String getLength()
@@ -135,6 +127,38 @@ public class PartMem
 	public int hashCode()
 	{
 		return this.name.hashCode();
+	}
+
+	/**
+	 * @return the type
+	 */
+	public String getType()
+	{
+		return type;
+	}
+
+	/**
+	 * @param type the type to set
+	 */
+	public void setType(String type)
+	{
+		this.type = type;
+	}
+
+	/**
+	 * @return the childPart
+	 */
+	public Part getChildPart()
+	{
+		return childPart;
+	}
+
+	/**
+	 * @param childPart the childPart to set
+	 */
+	public void setChildPart(Part childPart)
+	{
+		this.childPart = childPart;
 	}
 
 }

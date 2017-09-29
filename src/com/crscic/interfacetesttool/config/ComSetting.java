@@ -8,7 +8,7 @@ package com.crscic.interfacetesttool.config;
  * @author zhaokai
  * 2017年9月6日 下午6:28:15
  */
-public class ComConfig
+public class ComSetting
 {
 	private String port;
 	private String baudrate;

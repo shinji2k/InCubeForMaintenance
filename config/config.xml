@@ -33,27 +33,21 @@
 		<keepAlive>true</keepAlive>
 	</socket>
 
-	<protocol config="config\protocol-config-tower.xml">
-		<interval time="10000" protocol="alarm_report" />
-		<interval time="5000" protocol="status" /> 
-		<!--<interval time="5000" protocol="alarm" /> 
-		
-		<response>
-			<field>15,18</field>
-			<value>00001f40</value>
-			<head>23646C686A7478787923</head>
-			<class>byte</class>
-			<pro>status</pro>
-			<quote>
-				<field name="sector-id,company-info">39,42</field>
-				<rule>response_id.rule</rule>
-			</quote>
-		</response>
-		-->
+	<send file="config\com\air-condition.xml">
+		<interval time="1000" protocol="analog" />
+		<!-- <interval time="10000" protocol="alarm_report" /> <interval time="5000" 
+			protocol="status" /> <interval time="5000" protocol="alarm" /> -->
+	</send>
+
+	<reply file="config\com\air-condition.xml">
+		<!-- <response> <field>15,18</field> <value>00001f40</value> <head>23646C686A7478787923</head> 
+			<tail>11</tail> <class>byte</class> <pro>status</pro> <quote> <field name="sector-id,company-info">39,42</field> 
+			<rule>response_id.rule</rule> </quote> </response> -->
 		<response>
 			<field>4,5</field>
 			<value>3031</value>
 			<head>7E</head>
+			<tail>0D</tail>
 			<class>byte</class>
 			<pro>status</pro>
 			<quote>
@@ -61,5 +55,5 @@
 				<rule>response_id.rule</rule>
 			</quote>
 		</response>
-	</protocol>
+	</reply>
 </root>

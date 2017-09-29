@@ -3,13 +3,14 @@
  */
 package com.crscic.interfacetesttool;
 
+import java.util.List;
+
 import org.dom4j.DocumentException;
 
-import com.crscic.interfacetesttool.config.ProtocolSetting;
-import com.crscic.interfacetesttool.config.ConfigHandler;
+import com.crscic.interfacetesttool.config.ReplySetting;
+import com.crscic.interfacetesttool.config.SendSetting;
 import com.crscic.interfacetesttool.connector.Connector;
-import com.crscic.interfacetesttool.exception.ConnectException;
-import com.crscic.interfacetesttool.exception.GenerateDataException;
+import com.crscic.interfacetesttool.data.ProtocolConfig;
 import com.crscic.interfacetesttool.exception.ParseXMLException;
 
 /**
@@ -23,13 +24,19 @@ public class Main
 		try
 		{
 			DataFactory factory = new DataFactory("config\\config.xml");
-			ProtocolSetting proSetting = factory.getProtocolSetting();
-			ConfigHandler dataConfig = factory.getDataConfig(proSetting);
 			Connector connector = factory.getConnector();
+//			SendSetting sendSetting = factory.getSendSetting();
+			ReplySetting replySetting = factory.getReplySetting();
+			List<ProtocolConfig> proCfgList = null;
+//			proCfgList = factory.getDataConfig(sendSetting.getSettingFilePath(),
+//					sendSetting.getProtocolList());
+			proCfgList = factory.getDataConfig(replySetting.getSettingFilePath(),
+					replySetting.getResponseList());
 
-			SendService service = new SendService();
-//			service.startService(connector, proSetting, dataConfig);
-			service.startReplyService(connector, proSetting, dataConfig);
+			Service service = new Service();
+			// service.startService(connector, sendSetting, dataConfig);
+			service.startReplyService(connector, replySetting, proCfgList);
+			// service.startSendService(connector, sendSetting, proCfgList);
 		}
 		catch (DocumentException e)
 		{
@@ -39,14 +46,14 @@ public class Main
 		{
 			e.printStackTrace();
 		}
-//		catch (GenerateDataException e)
-//		{
-//			e.printStackTrace();
-//		}
-//		catch (ConnectException e)
-//		{
-//			e.printStackTrace();
-//		}
+		// catch (GenerateDataException e)
+		// {
+		// e.printStackTrace();
+		// }
+		// catch (ConnectException e)
+		// {
+		// e.printStackTrace();
+		// }
 
 	}
 }
