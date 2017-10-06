@@ -45,14 +45,14 @@
 			<rule>response_id.rule</rule> </quote> </response> -->
 		<response>
 			<field>4,5</field>
-			<value>3031</value>
-			<head>7E</head>
-			<tail>0D</tail>
+			<value>686a</value>
+			<head>2364</head>
+			<tail>1111</tail>
 			<class>byte</class>
-			<pro>status</pro>
+			<pro>analog</pro>
 			<quote>
-				<field name="sector-id,company-info">2,5</field>
-				<rule>response_id.rule</rule>
+				<field name="ver,adr">2,5</field>
+				<field name="cid1">6,9</field>  //TODO:需要修改ConfigHandler中的getReplySetting方法，使其能够支持多个引用字段
 			</quote>
 		</response>
 	</reply>

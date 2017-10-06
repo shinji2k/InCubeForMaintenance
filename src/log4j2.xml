@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<configuration status="info">
+<configuration status="info" packages="com.crscic.interfacetesttool.log">
+	<Properties>
+		<Property name="level">debug</Property>
+	</Properties>
 	<!--先定义所有的appender -->
 	<appenders>
 		<!--这个输出控制台的配置 -->
@@ -11,17 +14,23 @@
 			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n" />
 		</Console>
 		<!--这个会打印出所有的信息，日志会自动存入 -->
-		<RollingFile name="RollingFile" fileName="./logs/app.log" filePattern="./logs/app-%d{yyyy-MM-dd}.log">
+		<RollingFile name="RollingFile" fileName="./logs/app.log"
+			filePattern="./logs/app-%d{yyyy-MM-dd}.log">
 			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n" />
 			<Policies />
 		</RollingFile>
+		<!-- 自定义的Appender，用于实现将日志输出到GUI -->
+		<TextBoxAppender name="TextBoxAppender">
+			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n" />
+		</TextBoxAppender>
 	</appenders>
 	<!--然后定义logger，只有定义了logger并引入的appender，appender才会生效 -->
 	<loggers>
 		<!--建立一个默认的root的logger -->
-		<root level="debug">
+		<root level="${level}">
 			<appender-ref ref="RollingFile" />
 			<appender-ref ref="Console" />
+			<appender-ref ref="TextBoxAppender"/>
 		</root>
 	</loggers>
 </configuration>

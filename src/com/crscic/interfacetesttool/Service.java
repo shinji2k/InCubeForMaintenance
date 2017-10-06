@@ -267,9 +267,6 @@ public class Service
 		 */
 		public void startReplyService(Connector connector, ReplySetting replySetting, List<ProtocolConfig> proCfgList)
 		{
-			Thread sendThread = new Thread(this);
-			sendThread.start();
-
 			try
 			{
 				if (!connector.isOpen())
