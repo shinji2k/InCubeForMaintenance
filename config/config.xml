@@ -52,7 +52,7 @@
 			<pro>analog</pro>
 			<quote>
 				<field name="ver,adr">2,5</field>
-				<field name="cid1">6,9</field>  //TODO:需要修改ConfigHandler中的getReplySetting方法，使其能够支持多个引用字段
+				<field name="cid1">6,9</field>
 			</quote>
 		</response>
 	</reply>

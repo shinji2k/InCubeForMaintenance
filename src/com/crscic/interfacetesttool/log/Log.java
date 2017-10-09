@@ -5,7 +5,6 @@ package com.crscic.interfacetesttool.log;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.swt.widgets.Text;
 
 /**
  * 
@@ -14,8 +13,6 @@ import org.eclipse.swt.widgets.Text;
 public class Log
 {
 	private static final Logger logger = LogManager.getLogger();
-	private static final String SEPARATOR = System.getProperty("line.separator");
-	private static Text outputText = null;
 
 	public static void debug(String log)
 	{
@@ -31,8 +28,6 @@ public class Log
 	public static void info(String log)
 	{
 		logger.info(log);
-		if (outputText != null)
-			outputText.append(log + SEPARATOR);
 	}
 
 	/**
@@ -45,8 +40,6 @@ public class Log
 	public static void error(String log, Exception e)
 	{
 		logger.error(log, e);
-		if (outputText != null)
-			outputText.append(log + SEPARATOR);
 	}
 
 	/**
@@ -58,8 +51,6 @@ public class Log
 	public static void error(String log)
 	{
 		logger.error(log);
-		if (outputText != null)
-			outputText.append(log + SEPARATOR);
 	}
 
 	/**
@@ -71,8 +62,6 @@ public class Log
 	public static void warn(String log)
 	{
 		logger.warn(log);
-		if (outputText != null)
-			outputText.append(log + SEPARATOR);
 	}
 
 	/**
@@ -84,25 +73,5 @@ public class Log
 	public static void lengthWarning(String nodaName)
 	{
 		logger.warn(nodaName + "节点生成数据的长度与配置中不一致");
-		if (outputText != null)
-			outputText.append(nodaName + "节点生成数据的长度与配置中不一致" + SEPARATOR);
 	}
-
-	/**
-	 * @return the outputText
-	 */
-	public static Text getOutputText()
-	{
-		return outputText;
-	}
-
-	/**
-	 * @param outputText
-	 *            the outputText to set
-	 */
-	public static void setOutputText(Text outputText)
-	{
-		Log.outputText = outputText;
-	}
-
 }

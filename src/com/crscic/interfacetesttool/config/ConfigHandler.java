@@ -111,17 +111,23 @@ public class ConfigHandler
 			response.setTail(respEle.elementTextTrim("tail"));
 			response.setNodeClass(respEle.elementTextTrim("class"));
 			response.setProtocol(respEle.elementTextTrim("pro"));
-			response.setQuoteField(respEle.element("quote").element("field").getTextTrim());
-			response.setQuoteFieldName(respEle.element("quote").element("field").attributeValue("name"));
+			
+			List<Element> quoteFieldList = XmlHelper.getElements(respEle.element("quote"));
+			
+			for (Element quoteField : quoteFieldList)
+				response.setQuoteInfo(quoteField.attributeValue("name"), quoteField.getTextTrim());
+//			response.setQuoteField(.getTextTrim());
+//			response.setQuoteFieldName(.attributeValue("name"));
 
 			responseList.add(response);
 
 			// 打印配置信息
-			Log.info("    当据请求的第" + response.getField() + "字节中内容为" + response.getValue() + "时回复协议："
+			Log.info("  当据请求的第" + response.getField() + "字节中内容为" + response.getValue() + "时回复协议："
 					+ response.getProtocol());
-			Log.info("    请求的报文头：" + response.getHead() + "，请求的报文尾：" + response.getTail() + ", 响应消息中的"
-					+ (String) response.getQuoteFieldName(String.class) + "字段使用请求中第" + response.getQuoteField()
-					+ "字节中的内容");
+			Log.info("    请求的报文头：" + response.getHead());
+			Log.info("    请求的报文尾：" + response.getTail());
+			for (String quoteField : response.getQuoteInfo().keySet())
+				Log.info("    响应消息中的" + quoteField + "字段使用请求中第" + response.getQuotePosString(quoteField) + "字节中的内容");
 		}
 		replySetting.setResponseList(responseList);
 		if (nullReply)

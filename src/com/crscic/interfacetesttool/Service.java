@@ -325,11 +325,11 @@ public class Service
 							}
 							// 设置引用字段
 							Map<String, byte[]> quoteMap = new HashMap<String, byte[]>();
-							byte[] quoteBytes = getQuoteByteArray(singleRequest, response.getQuotePos());
-							Log.debug("引用内容：" + ByteUtils.byteToHexString(quoteBytes));
-							List<String> quotePartNameList = response.getQuoteFieldName();
-							for (String quotePartName : quotePartNameList)
+							Map<String, Position> quoteInfo = response.getQuoteInfo();
+							for (String quotePartName : quoteInfo.keySet())
 							{
+								byte[] quoteBytes = getQuoteByteArray(singleRequest, quoteInfo.get(quotePartName));
+								Log.debug("引用内容：" + ByteUtils.byteToHexString(quoteBytes));
 								Log.debug("    字段：" + quotePartName + " | 值：" + ByteUtils.byteToHexString(quoteBytes));
 								quoteMap.put(quotePartName, quoteBytes);
 							}

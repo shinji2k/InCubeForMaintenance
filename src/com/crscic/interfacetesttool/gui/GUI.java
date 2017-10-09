@@ -25,8 +25,8 @@ public final class GUI
 {
 	private static Display display = Display.getDefault(); // 1.创建一个Display
 	private static Shell shell = new Shell();
-	private static Label iamLabel = new Label(shell, SWT.NONE);
-	private static final Combo iamCombo = new Combo(shell, SWT.DROP_DOWN);
+	private static Label modelLabel = new Label(shell, SWT.NONE);
+	private static final Combo modelCombo = new Combo(shell, SWT.DROP_DOWN);
 	private static Label connToLabel = new Label(shell, SWT.NONE);
 	private static final Combo connToCombo = new Combo(shell, SWT.NONE);
 	private static Button goButton = new Button(shell, SWT.CENTER);
@@ -38,26 +38,26 @@ public final class GUI
 		shell.setText("接口调试工具");
 		shell.setLayout(new GridLayout(5, false));
 
-		iamLabel.setText("我是");
+		modelLabel.setText("模式：");
 
 		// 实例化控件，布局中的控件顺序是根据实例化的顺序决定的
 		connToLabel.setText("连接");
 
 		// 初始化
-		iamCombo.add("平台");
-		iamCombo.add("RTU");
-		iamCombo.add("串口设备");
-		iamCombo.setData("0", "config/platform.xml");
-		iamCombo.setData("1", "config/rtu.xml");
-		iamCombo.setData("2", "config/device.xml");
-		iamCombo.addSelectionListener(new SelectionAdapter()
+		modelCombo.add("平台");
+		modelCombo.add("RTU");
+		modelCombo.add("串口设备");
+		modelCombo.setData("0", "config/platform.xml");
+		modelCombo.setData("1", "config/rtu.xml");
+		modelCombo.setData("2", "config/device.xml");
+		modelCombo.addSelectionListener(new SelectionAdapter()
 		{
 			@Override
 			public void widgetSelected(SelectionEvent e)
 			{
-				String key = "" + iamCombo.getSelectionIndex();
-				String value = iamCombo.getText();
-				String data = (String) iamCombo.getData(key);
+				String key = "" + modelCombo.getSelectionIndex();
+				String value = modelCombo.getText();
+				String data = (String) modelCombo.getData(key);
 //				outputText.append("key:" + key + "\tvalue:" + value + "\tdata:" + data);
 				Log.info("key:" + key + "\tvalue:" + value + "\tdata:" + data);
 			}

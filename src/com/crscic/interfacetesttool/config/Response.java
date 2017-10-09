@@ -1,14 +1,16 @@
 package com.crscic.interfacetesttool.config;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.crscic.interfacetesttool.entity.Position;
 
 /**
  * @author zhaokai
  *
- * 2017年9月28日 下午10:56:14
+ *         2017年9月28日 下午10:56:14
  */
 public class Response
 {
@@ -22,45 +24,61 @@ public class Response
 	private String value;
 	private String head;
 	private String tail;
-	//"class"
+	// "class"
 	private String nodeClass;
 	private String protocol;
+
+	private Map<String, Position> quoteInfo;
+
 	/**
 	 * 需要引用自请求中的字段
 	 */
-	private Position quotePos;
+	// private Position quotePos;
 	/**
 	 * 引用字段对应发送数据协议中的字段名称
 	 */
-	private List<String> quoteFieldName;
-	
-	
-	
-	
-	
-	public void setQuoteField(String field)
+	// private List<String> quoteFieldName;
+
+	public void setQuoteInfo(String fieldStr, String posStr)
 	{
-		this.quotePos = new Position();
-		this.quotePos.setPosition(field, ",");
+		if (quoteInfo == null)
+			quoteInfo = new HashMap<String, Position>();
+
+		Position pos = new Position();
+		pos.setPosition(posStr, ",");
+
+		String[] quoteFieldNameArray = fieldStr.split(",");
+		for (String quoteFieldName : quoteFieldNameArray)
+			quoteInfo.put(quoteFieldName, pos);
 	}
-	
-	public String getQuoteField()
+
+	public Map<String, Position> getQuoteInfo()
 	{
-		return this.quotePos.getPositionString();
+		return quoteInfo;
 	}
-	
+
+	// public void setQuoteField(String field)
+	// {
+	// this.quotePos = new Position();
+	// this.quotePos.setPosition(field, ",");
+	// }
+
+	// public String getQuoteField()
+	// {
+	// return this.quotePos.getPositionString();
+	// }
+
 	public void setField(String field)
 	{
 		this.cmdTypePos = new Position();
 		this.cmdTypePos.setPosition(field, ",");
 	}
-	
+
 	public String getField()
 	{
 		return this.cmdTypePos.getPositionString();
 	}
-	
-	
+
 	/**
 	 * @return the value
 	 */
@@ -68,13 +86,16 @@ public class Response
 	{
 		return value;
 	}
+
 	/**
-	 * @param value the value to set
+	 * @param value
+	 *            the value to set
 	 */
 	public void setValue(String value)
 	{
 		this.value = value;
 	}
+
 	/**
 	 * @return the head
 	 */
@@ -82,13 +103,16 @@ public class Response
 	{
 		return head;
 	}
+
 	/**
-	 * @param head the head to set
+	 * @param head
+	 *            the head to set
 	 */
 	public void setHead(String head)
 	{
 		this.head = head;
 	}
+
 	/**
 	 * @return the nodeClass
 	 */
@@ -96,13 +120,16 @@ public class Response
 	{
 		return nodeClass;
 	}
+
 	/**
-	 * @param nodeClass the nodeClass to set
+	 * @param nodeClass
+	 *            the nodeClass to set
 	 */
 	public void setNodeClass(String nodeClass)
 	{
 		this.nodeClass = nodeClass;
 	}
+
 	/**
 	 * @return the protocol
 	 */
@@ -110,46 +137,56 @@ public class Response
 	{
 		return protocol;
 	}
+
 	/**
-	 * @param protocol the protocol to set
+	 * @param protocol
+	 *            the protocol to set
 	 */
 	public void setProtocol(String pro)
 	{
 		this.protocol = pro;
 	}
+
 	/**
 	 * @return the quoteFieldName
 	 */
-	public List<String> getQuoteFieldName()
-	{
-		return quoteFieldName;
-	}
+	// public List<String> getQuoteFieldName()
+	// {
+	// return quoteFieldName;
+	// }
+	@Deprecated
 	public Object getQuoteFieldName(Class<?> clazz)
 	{
 		if (clazz.equals(String.class))
 		{
 			String ret = "";
-			for (String quoteFieldName : this.quoteFieldName)
+			// for (String quoteFieldName : this.quoteFieldName)
+			for (String quoteFieldName : this.quoteInfo.keySet())
 				ret = ret + quoteFieldName + ",";
 			ret = ret.substring(0, ret.length() - 1);
 			return ret;
 		}
 		else if (clazz.equals(List.class))
 		{
-			return this.quoteFieldName;
+			List<String> fieldNameList = new ArrayList<String>();
+			for (String fieldName : this.quoteInfo.keySet())
+				fieldNameList.add(fieldName);
+			return fieldNameList;
 		}
-		
+
 		return null;
 	}
+
 	/**
-	 * @param quoteFieldName the quoteFieldName to set
+	 * @param quoteFieldName
+	 *            the quoteFieldName to set
 	 */
 	public void setQuoteFieldName(String quoteFieldNameInXml)
 	{
-		String[] quoteFieldNameArray = quoteFieldNameInXml.split(",");
-		this.quoteFieldName = new ArrayList<String>();
-		for (String quoteFieldName : quoteFieldNameArray)
-			this.quoteFieldName.add(quoteFieldName);
+		// String[] quoteFieldNameArray = quoteFieldNameInXml.split(",");
+		// this.quoteFieldName = new ArrayList<String>();
+		// for (String quoteFieldName : quoteFieldNameArray)
+		// this.quoteFieldName.add(quoteFieldName);
 	}
 
 	/**
@@ -161,7 +198,8 @@ public class Response
 	}
 
 	/**
-	 * @param cmdTypePos the cmdTypePos to set
+	 * @param cmdTypePos
+	 *            the cmdTypePos to set
 	 */
 	public void setCmdTypePos(Position cmdTypePos)
 	{
@@ -169,28 +207,35 @@ public class Response
 	}
 
 	/**
-	 * @return the quotePos
+	 * 字符串形式返回位置信息，起始和截止以逗号分隔
+	 * @return
+	 * @author zhaokai
+	 * @create 2017年10月9日 下午6:21:44
 	 */
-	public Position getQuotePos()
+	public String getQuotePosString(String quoteFieldName)
 	{
-		return quotePos;
+		if (this.quoteInfo == null)
+			return null;
+		return this.quoteInfo.get(quoteFieldName).getPositionString();
 	}
 
 	/**
-	 * @param quotePos the quotePos to set
+	 * @param quotePos
+	 *            the quotePos to set
 	 */
-	public void setQuotePos(Position quotePos)
-	{
-		this.quotePos = quotePos;
-	}
+	// public void setQuotePos(Position quotePos)
+	// {
+	// this.quotePos = quotePos;
+	// }
 
 	/**
-	 * @param quoteFieldName the quoteFieldName to set
+	 * @param quoteFieldName
+	 *            the quoteFieldName to set
 	 */
-	public void setQuoteFieldName(List<String> quoteFieldName)
-	{
-		this.quoteFieldName = quoteFieldName;
-	}
+	// public void setQuoteFieldName(List<String> quoteFieldName)
+	// {
+	// this.quoteFieldName = quoteFieldName;
+	// }
 
 	/**
 	 * @return the tail
@@ -201,7 +246,8 @@ public class Response
 	}
 
 	/**
-	 * @param tail the tail to set
+	 * @param tail
+	 *            the tail to set
 	 */
 	public void setTail(String tail)
 	{
