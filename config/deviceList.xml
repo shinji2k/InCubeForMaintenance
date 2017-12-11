@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root desc="设备列表">
+	<device file="config\device\air-condition\parseConfig.xml">测试空调</device>
+	<device file="config/device/air-condition/some2.xml">some2</device>
+	<device file="config/device/air-condition/some3.xml">some3</device>
+</root>

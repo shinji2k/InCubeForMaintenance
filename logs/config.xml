@@ -20,15 +20,15 @@
 		<parity>none</parity>
 	</com>
 
-	<socket>
+	<socket>                                              
 		<!-- server or client -->
 		<!-- 填写server或client -->
-		<type>client</type>
+		<type>server</type>
 		<!-- if server, set null -->
 		<!-- 若为server，则此节点留空（需要保留节点） -->
-		<ip>127.0.0.1</ip>
+		<ip></ip>
 		<!-- 若为server，则此节点为监听端口；若为client，则此节点为连接服务器的端口 -->
-		<port>7676</port>
+		<port>10001</port>
 		<!-- 是否长连接, true或者false -->
 		<keepAlive>true</keepAlive>
 	</socket>
@@ -39,21 +39,27 @@
 			protocol="status" /> <interval time="5000" protocol="alarm" /> -->
 	</send>
 
-	<reply file="config\com\air-condition.xml">
-		<!-- <response> <field>15,18</field> <value>00001f40</value> <head>23646C686A7478787923</head> 
-			<tail>11</tail> <class>byte</class> <pro>status</pro> <quote> <field name="sector-id,company-info">39,42</field> 
-			<rule>response_id.rule</rule> </quote> </response> -->
+	<reply file="config\socket\scada.xml">
 		<response>
-			<field>4,5</field>
-			<value>686a</value>
-			<head>2364</head>
-			<tail>1111</tail>
+			<field>19,22</field>
+			<value>00000191</value>
+			<head>23646c686a7478787923</head>
+			<tail></tail>
 			<class>byte</class>
-			<pro>analog</pro>
+			<pro>real-time</pro>
 			<quote>
-				<field name="ver,adr">2,5</field>
-				<field name="cid1">6,9</field>
+				<!--<field name="ver,adr">2,5</field>
+				<field name="cid1">6,9</field> -->
 			</quote>
+		</response>
+		<response>
+			<field>19,22</field>
+			<value>00000065</value>
+			<head>23646c686a7478787923</head>
+			<tail></tail>
+			<class>byte</class>
+			<pro>login-response</pro>
+			<quote/>
 		</response>
 	</reply>
 </root>

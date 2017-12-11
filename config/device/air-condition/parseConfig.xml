@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root desc="现场设备调试配置">
+	<recv-setting>
+		<timeout>300</timeout>
+		<retry>3</retry>
+	</recv-setting>
+
+	<!-- 协议文件路径 -->
+	<protocol-file>config/device/air-condition/some.xml</protocol-file>
+
+	<request>
+		<pro>queryAnalog</pro>
+		<response>
+			<field>4,5</field><!-- 4,5 是地址位 -->
+			<value></value>
+			<head>7E</head>
+			<tail>0D</tail>
+			<class>byte</class>
+			<!-- 
+				这里的quote和reply中的不同，这里指的是组装好的请求中需要使用的字段位置，
+				有多个子节点时会按照配置的顺序将内容拼接，第一个节点在数组第一个元素；
+				使用时，当响应信息中，上面field节点指定位置的内容，与quote下field节点指定的，
+				请求信息中对应位置的内容一致时，则认为时匹配内容。设置quote节点时，value需要留空
+				value节点内容与quote节点互斥，即value有值，则不能存在quote节点（不是节点内容为空，是不能有该节点），反之亦然
+			-->
+			<quote>
+				<!-- 属性name只是单纯给这个节点起个名字 -->
+				<field name="adr">4,5</field>
+			</quote>
+		</response>
+	</request>
+	<!-- <request> <pro>queryAlarm</pro> <response> <field>4,5</field> <value>{$addr}</value> 
+		<head>7E</head> <tail>0D</tail> <class>byte</class> </response> </request> 
+		<request> <pro>querySwitch</pro> <response> <field>4,5</field> <value>{$addr}</value> 
+		<head>7E</head> <tail>0D</tail> <class>byte</class> </response> </request> -->
+</root>

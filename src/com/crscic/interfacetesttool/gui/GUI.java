@@ -1,21 +1,30 @@
 package com.crscic.interfacetesttool.gui;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
+import org.dom4j.DocumentException;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.List;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.crscic.interfacetesttool.DataFactory;
+import com.crscic.interfacetesttool.Service;
+import com.crscic.interfacetesttool.config.ParseSetting;
+import com.crscic.interfacetesttool.connector.Connector;
+import com.crscic.interfacetesttool.data.ProtocolConfig;
+import com.crscic.interfacetesttool.exception.ParseXMLException;
 import com.crscic.interfacetesttool.log.Log;
+import com.k.util.StringUtils;
 
 /**
  * 
@@ -23,54 +32,60 @@ import com.crscic.interfacetesttool.log.Log;
  */
 public final class GUI
 {
+	private static GUI gui;
+	private String selectedConfig;
+
 	private static Display display = Display.getDefault(); // 1.创建一个Display
 	private static Shell shell = new Shell();
-	private static Label modelLabel = new Label(shell, SWT.NONE);
-	private static final Combo modelCombo = new Combo(shell, SWT.DROP_DOWN);
-	private static Label connToLabel = new Label(shell, SWT.NONE);
-	private static final Combo connToCombo = new Combo(shell, SWT.NONE);
+	private static Label deviceLabel = new Label(shell, SWT.NONE);
+	private static final Combo deviceListCombo = new Combo(shell, SWT.READ_ONLY);
+	private static Label cntLabel = new Label(shell, SWT.None);
+	private static Text cntText = new Text(shell, SWT.BORDER);
 	private static Button goButton = new Button(shell, SWT.CENTER);
-	public static Text outputText = new Text(shell, SWT.BORDER | SWT.WRAP | SWT.H_SCROLL | SWT.V_SCROLL | SWT.CANCEL | SWT.MULTI);
+	private static Button stopButton = new Button(shell, SWT.CENTER);
+	public static StyledText outputText = new StyledText(shell,
+			SWT.BORDER | SWT.WRAP | SWT.H_SCROLL | SWT.V_SCROLL | SWT.CANCEL | SWT.MULTI);
 
-	public GUI() throws UnsupportedEncodingException
+	private GUI() throws UnsupportedEncodingException
 	{
+		GridData gd_cntText = new GridData(SWT.LEFT, SWT.FILL, false, false, 1, 1);
+		gd_cntText.widthHint = 30;
+		cntText.setLayoutData(gd_cntText);
 		shell.setSize(800, 600);
 		shell.setText("接口调试工具");
-		shell.setLayout(new GridLayout(5, false));
-
-		modelLabel.setText("模式：");
-
-		// 实例化控件，布局中的控件顺序是根据实例化的顺序决定的
-		connToLabel.setText("连接");
+		shell.setLayout(new GridLayout(6, false));
 
 		// 初始化
-		modelCombo.add("平台");
-		modelCombo.add("RTU");
-		modelCombo.add("串口设备");
-		modelCombo.setData("0", "config/platform.xml");
-		modelCombo.setData("1", "config/rtu.xml");
-		modelCombo.setData("2", "config/device.xml");
-		modelCombo.addSelectionListener(new SelectionAdapter()
+		cntLabel.setText("数量：");
+
+		// 初始化设备列表
+		deviceLabel.setText("设备：");
+		Map<String, String> deviceMap = DataFactory.getDeviceInfo();
+		if (deviceMap != null)
+		{
+			int idx = 0;
+			for (String key : deviceMap.keySet())
+			{
+				deviceListCombo.add(key);
+				deviceListCombo.setData(Integer.toString(idx++), deviceMap.get(key));
+			}
+		}
+		deviceListCombo.addSelectionListener(new SelectDeviceComboEventHandler());
+
+		cntText.setText("1");
+		goButton.setText("开始");
+		goButton.addSelectionListener(new StartServiceEventHandler());
+		stopButton.setText("停止");
+		stopButton.addSelectionListener(new SelectionAdapter()
 		{
 			@Override
 			public void widgetSelected(SelectionEvent e)
 			{
-				String key = "" + modelCombo.getSelectionIndex();
-				String value = modelCombo.getText();
-				String data = (String) modelCombo.getData(key);
-//				outputText.append("key:" + key + "\tvalue:" + value + "\tdata:" + data);
-				Log.info("key:" + key + "\tvalue:" + value + "\tdata:" + data);
+				Service.running = false;
 			}
 		});
 
-		goButton.setText("开始");
-		// new Label(shell, SWT.NONE);
-		// new Label(shell, SWT.NONE);
-		// new Label(shell, SWT.NONE);
-		// new Label(shell, SWT.NONE);
-		// new Label(shell, SWT.NONE);
-
-		GridData gd_outputText = new GridData(SWT.FILL, SWT.FILL, true, true, 5, 1);
+		GridData gd_outputText = new GridData(SWT.FILL, SWT.FILL, true, true, 6, 1);
 		gd_outputText.heightHint = 493;
 		outputText.setLayoutData(gd_outputText);
 
@@ -83,15 +98,84 @@ public final class GUI
 				display.sleep();
 			}
 		}
+	}
 
-		// Frame f = new Frame("接口调试工具");// 构造一个新的、最初不可见的、具有指定标题的 Frame 对象。
-		//
-		// f.setSize(500, 400);// 设置窗口大小,宽度500，高度400
-		// f.setLocation(300, 200);// 设置窗口位置为距离屏幕左边水平方向300，上方垂直方向200
-		// f.setVisible(true);// 设置窗体可见。
-		// f.setLayout(new FlowLayout());// 设置窗体布局为流式布局。
-		// String buttonStr = new String("开始".getBytes(), "GBK");
-		// Button b = new Button(buttonStr);// 在窗口中添加一个按钮；
-		// f.add(b);// 将按钮添加到窗口内；
+	/**
+	 * 选择设备列表下拉菜单的响应事件
+	 * 
+	 * @author ken_8
+	 * @create 2017年10月12日 上午12:12:00
+	 */
+	class SelectDeviceComboEventHandler extends SelectionAdapter
+	{
+		@Override
+		public void widgetSelected(SelectionEvent e)
+		{
+			selectedConfig = (String) deviceListCombo.getData(Integer.toString(deviceListCombo.getSelectionIndex()));
+		}
+	}
+
+	class StartServiceEventHandler extends SelectionAdapter
+	{
+		@Override
+		public void widgetSelected(SelectionEvent e)
+		{
+			try
+			{
+				if (StringUtils.isNullOrEmpty(selectedConfig))
+				{
+					Log.error("请先选择设备");
+					return;
+				}
+				String sendLoopStr = cntText.getText();
+				if (StringUtils.isNullOrEmpty(sendLoopStr))
+				{
+					Log.error("请设置设备数量");
+					return;
+				}
+				int sentLoop = Integer.parseInt(sendLoopStr);
+				// 读取通信配置
+				DataFactory factory = new DataFactory("config\\rtu-device.xml");
+				Connector connector = factory.getConnector();
+				ParseSetting parseSetting = factory.getParseSetting(selectedConfig);
+				if (parseSetting == null)
+				{
+					Log.error("配置文件：" + selectedConfig + " 内容错误或不完整");
+					return;
+				}
+
+					
+				
+				java.util.List<ProtocolConfig> proCfgList = null;
+				Service service = new Service();
+				if (parseSetting != null)
+				{
+					proCfgList = factory.getDataConfig(parseSetting.getProtocolFile(), parseSetting.getRequest());
+					service.startParseServiceByNewThread(connector, parseSetting, proCfgList, sentLoop);
+				}
+				
+			}
+			catch (DocumentException e1)
+			{
+				e1.printStackTrace();
+			}
+			catch (ParseXMLException e1)
+			{
+				e1.printStackTrace();
+			}
+		}
+	}
+	
+	public static void start()
+	{
+		try
+		{
+			if (gui == null)
+				gui = new GUI();
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			Log.error("初始化界面失败", e);
+		}
 	}
 }

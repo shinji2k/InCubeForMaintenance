@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.dom4j.Attribute;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
 
 import com.crscic.interfacetesttool.data.Part;
@@ -13,10 +14,13 @@ import com.crscic.interfacetesttool.data.ProtocolConfig;
 import com.crscic.interfacetesttool.exception.ParseXMLException;
 import com.crscic.interfacetesttool.log.Log;
 import com.crscic.interfacetesttool.xmlhelper.XmlHelper;
+import com.k.util.StringUtils;
 
 /**
+ * 处理所有读取配置的操作
  * 
- * @author ken_8 2017年9月12日 下午10:23:08
+ * @author ken_8
+ * @create 2017年9月12日 下午10:23:08
  */
 public class ConfigHandler
 {
@@ -25,6 +29,43 @@ public class ConfigHandler
 	public ConfigHandler(XmlHelper xml)
 	{
 		this.xml = xml;
+	}
+
+	/**
+	 * 获取解析相关设置信息
+	 * 
+	 * @return
+	 * @author zhaokai
+	 * @create 2017年10月13日 下午2:49:14
+	 */
+	public ParseSetting getParseSetting()
+	{
+		// 发送重试次数与超时时间
+		Element recvSetting = xml.getSingleElement("/root/recv-setting");
+		ParseSetting parseSetting = XmlHelper.fill(recvSetting, ParseSetting.class);
+
+		// 协议文件路径
+		parseSetting.setProtocolFile(xml.getSingleElement("/root/protocol-file").getTextTrim());
+
+		// 请求列表，有多个请求
+		List<Element> requestNodeList = xml.getElements("/root/request");
+		List<Request> requestList = new ArrayList<Request>();
+		for (Element requestNode : requestNodeList)
+		{
+			Request request = new Request();
+			request.setSendProtocol(requestNode.elementTextTrim("pro"));
+
+			// 回复信息
+			Element respEle = requestNode.element("response");
+			Response response = getResponse(respEle);
+			
+			request.setResponse(response);
+			requestList.add(request);
+		}
+
+		parseSetting.setRequest(requestList);
+
+		return parseSetting;
 	}
 
 	public String getConnectType()
@@ -48,7 +89,8 @@ public class ConfigHandler
 	 * 返回发送协议设置信息
 	 * 
 	 * @return
-	 * @author zhaokai 2017年9月27日 下午11:15:07
+	 * @author zhaokai 
+	 * @create 2017年9月27日 下午11:15:07
 	 */
 	public SendSetting getSendSetting()
 	{
@@ -60,7 +102,7 @@ public class ConfigHandler
 		if (proList.size() == 0)
 			return null;
 
-		Log.info("协议概况：");
+		Log.debug("协议概况：");
 		SendSetting sendSetting = new SendSetting();
 		// 协议路径
 		sendSetting.setSettingFilePath(sendNode.attributeValue("file"));
@@ -72,7 +114,7 @@ public class ConfigHandler
 			protocolList.add(protocol);
 			Long interval = Long.parseLong(proList.get(i).attributeValue("time"));
 			proMap.put(protocol, interval);
-			Log.info("    协议" + (i + 1) + "：" + protocol + "，发送间隔：" + interval + "毫秒");
+			Log.debug("    协议" + (i + 1) + "：" + protocol + "，发送间隔：" + interval + "毫秒");
 		}
 		sendSetting.setProtocolList(protocolList);
 		sendSetting.setProtocolMap(proMap);
@@ -84,11 +126,11 @@ public class ConfigHandler
 		Element respNode = xml.getSingleElement("/root/reply");
 		if (respNode == null)
 			return null;
-		
+
 		List<Element> respEleList = xml.getElements("//response");
 		boolean nullReply = false;
 
-		Log.info("自动回复概况：");
+		Log.debug("自动回复概况：");
 		// 缺少response节点
 		if (respEleList.size() == 0 || respEleList.get(0).elements().size() == 0)
 			nullReply = true;
@@ -97,7 +139,6 @@ public class ConfigHandler
 		List<Response> responseList = new ArrayList<Response>();
 		for (int i = 0; i < respEleList.size(); i++)
 		{
-			Response response = new Response();
 			Element respEle = respEleList.get(i);
 			// response内没有子节点
 			if (respEle.elements().size() == 0)
@@ -105,33 +146,21 @@ public class ConfigHandler
 				nullReply = true;
 				break;
 			}
-			response.setField(respEle.elementTextTrim("field"));
-			response.setValue(respEle.elementTextTrim("value"));
-			response.setHead(respEle.elementTextTrim("head"));
-			response.setTail(respEle.elementTextTrim("tail"));
-			response.setNodeClass(respEle.elementTextTrim("class"));
-			response.setProtocol(respEle.elementTextTrim("pro"));
-			
-			List<Element> quoteFieldList = XmlHelper.getElements(respEle.element("quote"));
-			
-			for (Element quoteField : quoteFieldList)
-				response.setQuoteInfo(quoteField.attributeValue("name"), quoteField.getTextTrim());
-//			response.setQuoteField(.getTextTrim());
-//			response.setQuoteFieldName(.attributeValue("name"));
-
+			Response response = getResponse(respEle);
 			responseList.add(response);
 
 			// 打印配置信息
-			Log.info("  当据请求的第" + response.getField() + "字节中内容为" + response.getValue() + "时回复协议："
+			Log.debug("  当据请求的第" + response.getField() + "字节中内容为" + response.getValue() + "时回复协议："
 					+ response.getProtocol());
-			Log.info("    请求的报文头：" + response.getHead());
-			Log.info("    请求的报文尾：" + response.getTail());
-			for (String quoteField : response.getQuoteInfo().keySet())
-				Log.info("    响应消息中的" + quoteField + "字段使用请求中第" + response.getQuotePosString(quoteField) + "字节中的内容");
+			Log.debug("    请求的报文头：" + (StringUtils.isNullOrEmpty(response.getHead()) ? "无" : response.getHead()));
+			Log.debug("    请求的报文尾：" + (StringUtils.isNullOrEmpty(response.getTail()) ? "无" : response.getTail()));
+			if (response.getQuoteInfo() != null && response.getQuoteInfo().keySet().size() > 0)
+				for (String quoteField : response.getQuoteInfo().keySet())
+					Log.debug("    响应消息中的" + quoteField + "字段使用请求中第" + response.getQuotePosString(quoteField) + "字节中的内容");
 		}
 		replySetting.setResponseList(responseList);
 		if (nullReply)
-			Log.info("   没有配置自动回复信息，不进行自动回复");
+			Log.debug("   没有配置自动回复信息，不进行自动回复");
 
 		return replySetting;
 	}
@@ -150,7 +179,7 @@ public class ConfigHandler
 		List<ProtocolConfig> proCfgList = new ArrayList<ProtocolConfig>();
 		if (protocolList.size() == 0)
 			return proCfgList;
-		Log.info("正在获取协议配置...");
+		Log.debug("正在获取协议配置...");
 		// 获取发送协议
 		for (String protocol : protocolList)
 		{
@@ -185,9 +214,9 @@ public class ConfigHandler
 	 * 
 	 * @param ele
 	 * @return
-	 * @author zhaokai 2017年9月12日 下午12:37:06
+	 * @author zhaokai
+	 * @create 2017年9月12日 下午12:37:06
 	 */
-
 	private List<Part> fillPart(Element ele)
 	{
 		List<Part> partList = new ArrayList<Part>();
@@ -234,5 +263,60 @@ public class ConfigHandler
 			partList.add(part);
 		}
 		return partList;
+	}
+
+	/**
+	 * 获取deviceList.xml中配置的设备和设备对应的配置文件信息
+	 * 
+	 * @return
+	 * @author ken_8
+	 * @create 2017年10月11日 下午11:47:35
+	 */
+	public static Map<String, String> getDeviceInfo()
+	{
+		Map<String, String> deviceInfo = null;
+		XmlHelper xml;
+		try
+		{
+			xml = new XmlHelper("config/deviceList.xml");
+			List<Element> deviceNodeList = xml.getElements("//device");
+			if (deviceNodeList.size() == 0)
+				return null;
+			deviceInfo = new HashMap<String, String>();
+			for (Element deviceNode : deviceNodeList)
+				deviceInfo.put(deviceNode.getTextTrim(), deviceNode.attributeValue("file"));
+		}
+		catch (DocumentException e)
+		{
+			Log.error("读取设备列表设置错误", e);
+		}
+		return deviceInfo;
+	}
+
+	/**
+	 * response节点内容注入
+	 * @param respEle
+	 * @return
+	 * @author ken_8
+	 * @create 2017年10月15日 上午12:22:58
+	 */
+	public Response getResponse(Element respEle)
+	{
+		Response response = new Response();
+		response.setField(respEle.elementTextTrim("field"));
+		response.setValue(respEle.elementTextTrim("value"));
+		response.setHead(respEle.elementTextTrim("head"));
+		response.setTail(respEle.elementTextTrim("tail"));
+		response.setNodeClass(respEle.elementTextTrim("class"));
+		response.setProtocol(respEle.elementTextTrim("pro"));
+		Element quoteNode = respEle.element("quote");
+		if (quoteNode != null)
+		{
+			List<Element> quoteFieldList = XmlHelper.getElements(quoteNode);
+			for (Element quoteField : quoteFieldList)
+				response.setQuoteInfo(quoteField.attributeValue("name"), quoteField.getTextTrim());
+		}
+		
+		return response;
 	}
 }

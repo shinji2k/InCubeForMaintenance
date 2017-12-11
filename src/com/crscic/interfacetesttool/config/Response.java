@@ -1,7 +1,7 @@
 package com.crscic.interfacetesttool.config;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,19 +30,10 @@ public class Response
 
 	private Map<String, Position> quoteInfo;
 
-	/**
-	 * 需要引用自请求中的字段
-	 */
-	// private Position quotePos;
-	/**
-	 * 引用字段对应发送数据协议中的字段名称
-	 */
-	// private List<String> quoteFieldName;
-
 	public void setQuoteInfo(String fieldStr, String posStr)
 	{
 		if (quoteInfo == null)
-			quoteInfo = new HashMap<String, Position>();
+			quoteInfo = new LinkedHashMap<String, Position>();	//保证储存顺序与配置中一致
 
 		Position pos = new Position();
 		pos.setPosition(posStr, ",");
@@ -56,17 +47,6 @@ public class Response
 	{
 		return quoteInfo;
 	}
-
-	// public void setQuoteField(String field)
-	// {
-	// this.quotePos = new Position();
-	// this.quotePos.setPosition(field, ",");
-	// }
-
-	// public String getQuoteField()
-	// {
-	// return this.quotePos.getPositionString();
-	// }
 
 	public void setField(String field)
 	{
@@ -147,20 +127,12 @@ public class Response
 		this.protocol = pro;
 	}
 
-	/**
-	 * @return the quoteFieldName
-	 */
-	// public List<String> getQuoteFieldName()
-	// {
-	// return quoteFieldName;
-	// }
 	@Deprecated
 	public Object getQuoteFieldName(Class<?> clazz)
 	{
 		if (clazz.equals(String.class))
 		{
 			String ret = "";
-			// for (String quoteFieldName : this.quoteFieldName)
 			for (String quoteFieldName : this.quoteInfo.keySet())
 				ret = ret + quoteFieldName + ",";
 			ret = ret.substring(0, ret.length() - 1);
@@ -175,18 +147,6 @@ public class Response
 		}
 
 		return null;
-	}
-
-	/**
-	 * @param quoteFieldName
-	 *            the quoteFieldName to set
-	 */
-	public void setQuoteFieldName(String quoteFieldNameInXml)
-	{
-		// String[] quoteFieldNameArray = quoteFieldNameInXml.split(",");
-		// this.quoteFieldName = new ArrayList<String>();
-		// for (String quoteFieldName : quoteFieldNameArray)
-		// this.quoteFieldName.add(quoteFieldName);
 	}
 
 	/**
@@ -208,6 +168,7 @@ public class Response
 
 	/**
 	 * 字符串形式返回位置信息，起始和截止以逗号分隔
+	 * 
 	 * @return
 	 * @author zhaokai
 	 * @create 2017年10月9日 下午6:21:44
@@ -218,24 +179,6 @@ public class Response
 			return null;
 		return this.quoteInfo.get(quoteFieldName).getPositionString();
 	}
-
-	/**
-	 * @param quotePos
-	 *            the quotePos to set
-	 */
-	// public void setQuotePos(Position quotePos)
-	// {
-	// this.quotePos = quotePos;
-	// }
-
-	/**
-	 * @param quoteFieldName
-	 *            the quoteFieldName to set
-	 */
-	// public void setQuoteFieldName(List<String> quoteFieldName)
-	// {
-	// this.quoteFieldName = quoteFieldName;
-	// }
 
 	/**
 	 * @return the tail

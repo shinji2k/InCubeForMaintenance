@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.TooManyListenersException;
 
+import com.crscic.interfacetesttool.Service;
 import com.crscic.interfacetesttool.config.ComSetting;
 import com.crscic.interfacetesttool.exception.ConnectException;
 import com.crscic.interfacetesttool.log.Log;
@@ -37,8 +38,18 @@ public class ComConnector implements Connector
 	private String parity;
 	private String stopbit;
 	private SerialPort serialPort;
+	private boolean isOpen = false;
+	private static final ComConnector connector = new ComConnector(); 
+	
+	public static ComConnector getInstance(ComSetting comCfg)
+	{
+		connector.setProperty(comCfg);
+		if (!connector.isOpen)
+			connector.openConnect();
+		return connector;
+	}
 
-	public ComConnector(ComSetting comCfg)
+	public void setProperty(ComSetting comCfg)
 	{
 		port = comCfg.getPort();
 		baudrate = comCfg.getBaudrate();
@@ -46,6 +57,12 @@ public class ComConnector implements Connector
 		parity = comCfg.getParity();
 		stopbit = comCfg.getStopbit();
 	}
+
+	private ComConnector()
+	{
+		super();
+	}
+	
 
 	@Override
 	public void send(byte[] data) throws ConnectException
@@ -56,11 +73,9 @@ public class ComConnector implements Connector
 		OutputStream out = null;
 		try
 		{
-
 			out = serialPort.getOutputStream();
 			out.write(data);
 			out.flush();
-
 		}
 		catch (IOException e)
 		{
@@ -79,19 +94,18 @@ public class ComConnector implements Connector
 	@Override
 	public void openConnect()
 	{
-		Log.info("接口类型为串口，串口号：" + this.port + "，波特率：" + this.baudrate + "，数据位：" + this.databit + "，停止位：" + this.stopbit
+		Log.debug("接口类型为串口，串口号：" + this.port + "，波特率：" + this.baudrate + "，数据位：" + this.databit + "，停止位：" + this.stopbit
 				+ "，校验位：" + this.parity);
 		try
 		{
 			// 通过端口名识别端口
-			Log.info("识别串口...");
+			Log.debug("识别串口...");
 			CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(this.port);
-
-			Log.info("打开串口...");
+			Log.debug("打开串口...");
 			// 打开端口，并给端口名字和一个timeout（打开操作的超时时间）
 			CommPort commPort = portIdentifier.open(this.port, 2000);
-			Log.info("串口打开成功");
-
+			Log.debug("串口打开成功");
+			this.isOpen = true;
 			// 判断是不是串口
 			if (commPort instanceof SerialPort)
 			{
@@ -260,6 +274,7 @@ public class ComConnector implements Connector
 			serialPort.close();
 			serialPort = null;
 		}
+		this.isOpen = false;
 	}
 
 	/*
@@ -277,7 +292,7 @@ public class ComConnector implements Connector
 			is = serialPort.getInputStream();
 			recvData = new ArrayList<Byte>();
 			int len = 0;
-			while ((len = is.available()) > 0)
+			while ((len = is.available()) > 0 && Service.running)
 			{
 				// 虽然几率较低，但仍有可能在从while的条件判断到read之间有新的数据进来，造成少取了数据
 				byte[] buff = new byte[len];
@@ -314,9 +329,7 @@ public class ComConnector implements Connector
 	@Override
 	public boolean isOpen()
 	{
-		if (serialPort == null)
-			return false;
-		return true;
+		return isOpen;
 	}
 
 }

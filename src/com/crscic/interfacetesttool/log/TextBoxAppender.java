@@ -15,6 +15,7 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.eclipse.swt.widgets.Display;
 
 import com.crscic.interfacetesttool.gui.GUI;
 
@@ -27,7 +28,7 @@ public class TextBoxAppender extends AbstractAppender
 {
 
 	private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
-	private final Lock readLock =  rwLock.readLock();
+	private final Lock readLock = rwLock.readLock();
 
 	protected TextBoxAppender(final String name, final Filter filter, final Layout<? extends Serializable> layout,
 			final boolean ignoreExceptions)
@@ -39,17 +40,34 @@ public class TextBoxAppender extends AbstractAppender
 	public void append(LogEvent event)
 	{
 		readLock.lock();
-        try {
-            final byte[] bytes = getLayout().toByteArray(event);//日志二进制文件，输出到指定位置就行
-            //下面这个是要实现的自定义逻辑
-            GUI.outputText.append(new String(bytes));
-        } catch (Exception ex) {
-            if (!ignoreExceptions()) {
-                throw new AppenderLoggingException(ex);
-            }
-        } finally {
-            readLock.unlock();
-        }
+		try
+		{
+			final byte[] bytes = getLayout().toByteArray(event);// 日志二进制文件，输出到指定位置就行
+			// 下面这个是要实现的自定义逻辑
+			/**
+			 * 异步修改GUI中的控件信息
+			 * Java不允许UI线程以外的线程修改UI界面
+			 * 不这么写会抛出SWT异常: org.eclipse.swt.SWTException: Invalid thread access
+			 */
+			Display.getDefault().syncExec(new Runnable()
+			{
+				public void run()
+				{
+					GUI.outputText.append(new String(bytes));
+				}
+			});
+		}
+		catch (Exception ex)
+		{
+			if (!ignoreExceptions())
+			{
+				throw new AppenderLoggingException(ex);
+			}
+		}
+		finally
+		{
+			readLock.unlock();
+		}
 	}
 
 	@PluginFactory

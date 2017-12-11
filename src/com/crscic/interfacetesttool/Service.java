@@ -7,7 +7,9 @@ import java.util.Map;
 
 import org.dom4j.DocumentException;
 
+import com.crscic.interfacetesttool.config.ParseSetting;
 import com.crscic.interfacetesttool.config.ReplySetting;
+import com.crscic.interfacetesttool.config.Request;
 import com.crscic.interfacetesttool.config.Response;
 import com.crscic.interfacetesttool.config.SendSetting;
 import com.crscic.interfacetesttool.connector.Connector;
@@ -20,6 +22,7 @@ import com.crscic.interfacetesttool.exception.ParseXMLException;
 import com.crscic.interfacetesttool.log.Log;
 import com.k.util.ByteUtils;
 import com.k.util.CollectionUtils;
+import com.k.util.StringUtils;
 
 /**
  * 
@@ -27,16 +30,24 @@ import com.k.util.CollectionUtils;
  */
 public class Service
 {
+	public static boolean running = true;
+
+	public void startParseService(Connector connector, ParseSetting parseSetting, List<ProtocolConfig> proCfgList,
+			int loopCnt)
+	{
+		new ParseService().startParseService(connector, parseSetting, proCfgList, loopCnt);
+	}
+
 	public void startSendService(Connector connector, SendSetting sendSetting, List<ProtocolConfig> proCfgList)
 	{
 		new SendService().startSendService(connector, sendSetting, proCfgList);
 	}
-	
+
 	public void startReplyService(Connector connector, ReplySetting replySetting, List<ProtocolConfig> proCfgList)
 	{
 		new ReplyService().startReplyService(connector, replySetting, proCfgList);
 	}
-	
+
 	/**
 	 * 启动发送和回复服务，此方法会创建线程，不能再LoadRunner中使用
 	 * 
@@ -49,39 +60,114 @@ public class Service
 	 * @throws ConnectException
 	 * @author ken_8 2017年9月19日 上午12:07:27
 	 */
-	public void startService(Connector connector, SendSetting sendSetting, List<ProtocolConfig> sendProCfgList, ReplySetting replySetting, List<ProtocolConfig> replyProCfgList)
+	public void startService(Connector connector, SendSetting sendSetting, List<ProtocolConfig> sendProCfgList,
+			ReplySetting replySetting, List<ProtocolConfig> replyProCfgList)
 	{
 		Thread sendThread = new Thread(new SendService(connector, sendSetting, sendProCfgList));
 		sendThread.start();
 		Thread replyThread = new Thread(new ReplyService(connector, replySetting, replyProCfgList));
 		replyThread.start();
 	}
-	
-	private byte[] getQuoteByteArray(List<Byte> request, Position quotePos)
+
+	/**
+	 * 创建线程执行发送服务，不能在LR中使用
+	 * 
+	 * @param connector
+	 * @param sendSetting
+	 * @param sendProCfgList
+	 * @author zhaokai
+	 * @create 2017年10月10日 上午9:47:44
+	 */
+	public void startSendServiceByNewThread(Connector connector, SendSetting sendSetting,
+			List<ProtocolConfig> sendProCfgList)
 	{
-		return CollectionUtils.subArray(request, quotePos.getStartPos(), quotePos.getStopPos());
+		if (!connector.isOpen())
+		{
+			try
+			{
+				connector.openConnect();
+			}
+			catch (ConnectException e)
+			{
+				Log.error("打开连接失败", e);
+			}
+		}
+		Thread sendThread = new Thread(new SendService(connector, sendSetting, sendProCfgList));
+		sendThread.start();
+	}
+
+	/**
+	 * 创建线程执行回复服务，不能在LR中使用
+	 * 
+	 * @param connector
+	 * @param replySetting
+	 * @param replyProCfgList
+	 * @author zhaokai
+	 * @create 2017年10月10日 上午9:48:25
+	 */
+	public void startReplyServiceByNewThread(Connector connector, ReplySetting replySetting,
+			List<ProtocolConfig> replyProCfgList)
+	{
+		if (!connector.isOpen())
+		{
+			try
+			{
+				connector.openConnect();
+			}
+			catch (ConnectException e)
+			{
+				Log.error("打开连接失败", e);
+			}
+		}
+		Thread replyThread = new Thread(new ReplyService(connector, replySetting, replyProCfgList));
+		replyThread.start();
+	}
+
+	public void startParseServiceByNewThread(Connector connector, ParseSetting parseSetting,
+			List<ProtocolConfig> parseProCfgList, int loopCnt)
+	{
+		if (!connector.isOpen())
+		{
+			try
+			{
+				connector.openConnect();
+			}
+			catch (ConnectException e)
+			{
+				Log.error("打开连接失败", e);
+			}
+		}
+		Thread parseThread = new Thread(new ParseService(connector, parseSetting, parseProCfgList, loopCnt));
+		parseThread.start();
+	}
+
+	private byte[] getQuoteByteArray(List<Byte> src, Position quotePos)
+	{
+		return CollectionUtils.subArray(src, quotePos.getStartPos(), quotePos.getStopPos());
+	}
+
+	private byte[] getQuoteByteArray(byte[] src, Position quotePos)
+	{
+		return CollectionUtils.subArray(src, quotePos.getStartPos(), quotePos.getStopPos());
 	}
 
 	/**
 	 * 判断请求中指定区间的byte是否与给定的byte[]相同
 	 * 
-	 * @param request
+	 * @param src
 	 *            请求byte[]
-	 * @param cmdTypePos
+	 * @param pairPos
 	 *            截取区间
 	 * @param targetCmdTypeString
 	 *            目标byte[]
 	 * @return
 	 * @author ken_8 2017年9月15日 上午12:04:18
 	 */
-	private boolean needReply(List<Byte> request, Position cmdTypePos, String targetCmdTypeString,
-			String nodeClassString)
+	private boolean isPaired(List<Byte> src, Position pairPos, byte[] keyWord)
 	{
 		boolean res = false;
-		byte[] targetCmdType = nodeClassString.equals("byte") ? ByteUtils.hexStringToBytes(targetCmdTypeString)
-				: targetCmdTypeString.getBytes();
-		byte[] reqCmdType = CollectionUtils.subArray(request, cmdTypePos.getStartPos(), cmdTypePos.getStopPos());
-		if (CollectionUtils.isSameArray(reqCmdType, targetCmdType))
+		byte[] part = CollectionUtils.subArray(src, pairPos.getStartPos(), pairPos.getStopPos());
+		if (CollectionUtils.isSameArray(part, keyWord))
 			res = true;
 		return res;
 	}
@@ -96,12 +182,38 @@ public class Service
 	 * @param tailString
 	 *            请求尾的16进制串，字符串形式
 	 * @return
-	 * @author zhaokai 2017年9月14日 下午8:02:00
+	 * @author zhaokai
+	 * @create 2017年9月14日 下午8:02:00
 	 */
-	private List<List<Byte>> getFullRequest(List<Byte> request, String headString, String tailString)
+	private List<List<Byte>> getFullMessage(List<Byte> request, String headString, String tailString)
 	{
-		byte[] head = ByteUtils.hexStringToBytes(headString);
-		byte[] tail = ByteUtils.hexStringToBytes(tailString);
+		boolean nullHead = false;
+		boolean nullTail = false;
+		byte[] head;
+		byte[] tail;
+		// 认为不存在头、尾全为空的情况
+		// 若没有头，则用尾当头用来截取
+		if (StringUtils.isNullOrEmpty(headString))
+		{
+			head = ByteUtils.hexStringToBytes(tailString);
+			nullHead = true;
+		}
+		else
+		{
+			head = ByteUtils.hexStringToBytes(headString);
+		}
+
+		// 若没有尾，则用头当尾用来截取
+		if (StringUtils.isNullOrEmpty(tailString))
+		{
+			tail = ByteUtils.hexStringToBytes(headString);
+			nullTail = true;
+		}
+		else
+		{
+			tail = ByteUtils.hexStringToBytes(tailString);
+		}
+
 		List<List<Byte>> reqs = new ArrayList<List<Byte>>();
 		int headPos;
 		while ((headPos = CollectionUtils.indexOf(request, head)) != -1) // 发现头之后继续
@@ -112,24 +224,36 @@ public class Service
 				headPos = 0;
 			}
 
-			int tailPos = CollectionUtils.indexOf(request, tail);
+			int tailPos = CollectionUtils.indexOf(request, tail, head.length);
 			if (tailPos == -1) // 没找到尾
 				return reqs;
 
 			int subStopPos = tailPos + tail.length - 1;
+			// 若为没头或没尾的情况，截取时需要对截取位置做调整，让出缺失的头或尾
+			if (nullHead)
+				headPos += head.length;
+			if (nullTail)
+				subStopPos -= tail.length;
 			List<Byte> singleRequest = CollectionUtils.subList(request, headPos, subStopPos);
 
 			// 删除旧数据
 			if (subStopPos + 1 == request.size())
+			{
 				request.clear();
+			}
 			else
+			{
+				// 若头为空，就需要留下上一条的尾来做下一条的头
+				if (nullHead)
+					subStopPos -= tail.length;
 				CollectionUtils.removeBefore(request, subStopPos);
+			}
 
 			reqs.add(singleRequest);
 		}
 		return reqs;
 	}
-	
+
 	/**
 	 * @param proCfgList
 	 * @param protocol
@@ -151,14 +275,34 @@ public class Service
 	{
 		super();
 	}
-	
-	
+
+	/**
+	 * 根据配置中的quote节点内容获取数据源中对应字段的内容作为配对依据。
+	 * quote节点中配置多个子节点时按照配置顺序将字段内容拼接，第一个节点为数组第一个元素
+	 * 
+	 * @param req
+	 * @param quoteInfo
+	 * @return
+	 * @author zhaokai
+	 * @date 2017年10月15日 下午3:34:14
+	 */
+	private byte[] getPairKey(byte[] req, Map<String, Position> quoteInfo)
+	{
+		List<Byte> keyByteList = new ArrayList<Byte>();
+		for (String key : quoteInfo.keySet())
+		{
+			byte[] keyPart = this.getQuoteByteArray(req, quoteInfo.get(key));
+			keyByteList = CollectionUtils.copyArrayToList(keyByteList, keyPart);
+		}
+		return CollectionUtils.toByteArray(keyByteList);
+	}
+
 	class SendService implements Runnable
 	{
 		private Connector connector;
 		private SendSetting sendSetting;
 		private List<ProtocolConfig> proCfgList;
-		
+
 		public SendService()
 		{
 		}
@@ -199,7 +343,7 @@ public class Service
 			for (String protocol : protocolMap.keySet())
 				interval.put(protocol, System.currentTimeMillis());
 			Data sendData = new Data();
-			while (true)
+			while (running)
 			{
 				try
 				{
@@ -248,11 +392,11 @@ public class Service
 		private Connector connector;
 		private ReplySetting replySetting;
 		private List<ProtocolConfig> proCfgList;
-		
+
 		public ReplyService()
 		{
 		}
-		
+
 		public ReplyService(Connector connector, ReplySetting replySetting, List<ProtocolConfig> proCfgList)
 		{
 			this.connector = connector;
@@ -283,7 +427,7 @@ public class Service
 			List<Byte> recvList = new ArrayList<Byte>();
 			try
 			{
-				while (true)
+				while (running)
 				{
 					// 没有进行自动回复配置，无需进行自动回复
 					if (replySetting.getResponseList().size() == 0)
@@ -309,23 +453,27 @@ public class Service
 					{
 
 						// 查看是否完整的请求，如果是完整的，则取出完整请求并从缓冲区中移除该请求
-						List<List<Byte>> requestList = getFullRequest(recvList, response.getHead(), response.getTail());
+						List<List<Byte>> requestList = getFullMessage(recvList, response.getHead(), response.getTail());
 						if (requestList.size() == 0) // 无完整请求
 							continue;
 						// 返回的是多条完整的请求，循环处理每个请求
 						for (List<Byte> singleRequest : requestList)
 						{
-							Log.info("收到请求：" + ByteUtils.byteToHexString(singleRequest));
+							Log.debug("收到请求：" + ByteUtils.byteToHexString(singleRequest));
 							// 是不是需要回复的请求
-							if (!needReply(singleRequest, response.getCmdTypePos(), response.getValue(),
-									response.getNodeClass()))
+							byte[] keyByteArray = Data.getByteArrayByClass(response.getValue(),
+									response.getNodeClass());
+							if (!isPaired(singleRequest, response.getCmdTypePos(), keyByteArray))
 							{
-								Log.info("不是需要回复的请求");
+								Log.debug("不是需要回复的请求");
 								continue;
 							}
+							Log.info("收到请求：" + ByteUtils.byteToHexString(singleRequest));
 							// 设置引用字段
 							Map<String, byte[]> quoteMap = new HashMap<String, byte[]>();
-							Map<String, Position> quoteInfo = response.getQuoteInfo();
+							Map<String, Position> quoteInfo = response.getQuoteInfo() == null
+									? new HashMap<String, Position>()
+									: response.getQuoteInfo();
 							for (String quotePartName : quoteInfo.keySet())
 							{
 								byte[] quoteBytes = getQuoteByteArray(singleRequest, quoteInfo.get(quotePartName));
@@ -375,5 +523,195 @@ public class Service
 		{
 			startReplyService(connector, replySetting, proCfgList);
 		}
+	}
+
+	class ParseService implements Runnable
+	{
+		private Connector connector;
+		private ParseSetting parseSetting;
+		private List<ProtocolConfig> proCfgList;
+		private int loopCnt;
+
+		public ParseService()
+		{
+		}
+
+		public ParseService(Connector connector, ParseSetting parseSetting, List<ProtocolConfig> proCfgList,
+				int loopCnt)
+		{
+			this.connector = connector;
+			this.parseSetting = parseSetting;
+			this.proCfgList = proCfgList;
+			this.loopCnt = loopCnt;
+		}
+
+		public void startParseService(Connector connector, ParseSetting parseSetting, List<ProtocolConfig> proCfgList,
+				int loopCnt)
+		{
+			try
+			{
+				synchronized (connector)
+				{
+					if (!connector.isOpen())
+						connector.openConnect();
+				}
+			}
+			catch (ConnectException e)
+			{
+				Log.error("打开连接失败", e);
+				return;
+			}
+
+			// 超时and重试，若没有设置则认为永不超时和无限重试
+			boolean noTimeout = false;
+			if (StringUtils.isNullOrEmpty(parseSetting.getTimeout()))
+			{
+				noTimeout = true;
+				Log.debug("永不超时");
+			}
+			long timeout = 0;
+			if (!noTimeout)
+			{
+				timeout = Long.parseLong(parseSetting.getTimeout());
+				Log.debug("超时时间：" + timeout + "毫秒");
+			}
+
+			boolean noRetry = false;
+			if (StringUtils.isNullOrEmpty(parseSetting.getRetry()))
+			{
+				noRetry = true;
+				Log.debug("无限重试");
+			}
+			int retry = 0;
+			if (!noRetry)
+			{
+				retry = Integer.parseInt(parseSetting.getRetry());
+				Log.debug("重试次数：" + retry);
+			}
+
+			try
+			{
+				byte[] b;
+				// 按设备数量循环
+				Data sendData = new Data();
+				for (int i = 0; i < loopCnt; i++)
+				{
+					int loop = 0;
+					List<Request> requestList = CollectionUtils.copyList(parseSetting.getRequest(), null);
+					Map<String, byte[]> failedMem = new HashMap<String, byte[]>();
+					while (loop < retry || noRetry)
+					{
+						if (requestList.size() == 0)
+							break;
+						nextRequest: for (int j = 0; j < requestList.size(); j++)
+						{
+							Request request = requestList.get(j);
+							if (failedMem.containsKey(request.getSendProtocol()))
+							{
+								b = failedMem.get(request.getSendProtocol());
+							}
+							else
+							{
+								// 生成请求数据
+								ProtocolConfig proConfig = getProtocolConfigByProtocolName(proCfgList,
+										request.getSendProtocol());
+								b = sendData.getSendData(proConfig, new HashMap<String, byte[]>());
+							}
+							// 读取response节点配置
+							Response response = request.getResponse();
+							// 设置解析响应是否配对用的关键字，看看是从value中取值还是quote
+							Map<String, Position> quoteInfo = response.getQuoteInfo();
+							byte[] keyByteArray = null;
+							if (quoteInfo != null)
+								keyByteArray = getPairKey(b, quoteInfo);
+							else
+								keyByteArray = Data.getByteArrayByClass(response.getValue(), response.getNodeClass());
+
+							if (!noRetry)
+								Log.debug("第" + (loop + 1) + "次发送...");
+							connector.send(b);
+							Log.info("发送：" + ByteUtils.byteToHexString(b));
+							// 理论上发完请求会马上回复内容
+							long beginTime = System.currentTimeMillis();
+							// 将收到的内容添加到缓冲区
+							List<Byte> recvList = new ArrayList<Byte>();
+							while ((System.currentTimeMillis() - beginTime) < timeout || noTimeout)
+							{
+								recvList.addAll(connector.receive());
+								// 连接异常中断时会出现接收数据为空的情况
+								if (recvList.size() == 0)
+								{
+									if (!connector.isOpen())
+									{
+										connector.closeConnect();
+										connector.openConnect();
+									}
+									continue;
+								}
+
+								// 查看是否完整的响应，如果是完整的，则取出响应并从缓冲区中移除该响应
+								// 这个response不是指配置中的Response节点，而是实际的响应报文
+								List<List<Byte>> responseMsgList = getFullMessage(recvList, response.getHead(),
+										response.getTail());
+								if (requestList.size() == 0) // 无完整请求
+									continue;
+								// 返回的是多条完整的请求，循环处理每个请求
+								for (List<Byte> singleResponseMsg : responseMsgList)
+								{
+									Log.debug("收到请求：" + ByteUtils.byteToHexString(singleResponseMsg));
+									// 是不是需要回复的请求
+									if (!isPaired(singleResponseMsg, response.getCmdTypePos(), keyByteArray))
+									{
+										Log.debug("不是配对的回复");
+										continue;
+									}
+									Log.info("收到请求：" + ByteUtils.byteToHexString(singleResponseMsg));
+									// 配对成功后移除当前请求
+									failedMem.remove(request.getSendProtocol());
+									requestList.remove(request);
+									continue nextRequest;
+								}
+								// 是否要去掉sleep？
+								Thread.sleep(50);
+							}
+							failedMem.put(request.getSendProtocol(), b);
+							Log.debug("本次接收配对超时");
+						}
+						loop++;
+					}
+				}
+				Log.info("完成.");
+			}
+			catch (ConnectException e)
+			{
+				Log.error("连接错误", e);
+			}
+			catch (InterruptedException e)
+			{
+				Log.error("挂起失败", e);
+			}
+			catch (GenerateDataException e)
+			{
+				Log.error("生成数据失败", e);
+			}
+			finally
+			{
+				try
+				{
+					connector.closeConnect();
+				}
+				catch (ConnectException e)
+				{
+					Log.error("关闭连接失败", e);
+				}
+			}
+		}
+
+		@Override
+		public void run()
+		{
+			startParseService(connector, parseSetting, proCfgList, loopCnt);
+		}
+
 	}
 }

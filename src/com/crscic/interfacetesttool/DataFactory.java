@@ -3,11 +3,14 @@ package com.crscic.interfacetesttool;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.dom4j.DocumentException;
 
 import com.crscic.interfacetesttool.config.ConfigHandler;
+import com.crscic.interfacetesttool.config.ParseSetting;
 import com.crscic.interfacetesttool.config.ReplySetting;
+import com.crscic.interfacetesttool.config.Request;
 import com.crscic.interfacetesttool.config.Response;
 import com.crscic.interfacetesttool.config.SendSetting;
 import com.crscic.interfacetesttool.connector.ComConnector;
@@ -25,11 +28,19 @@ public class DataFactory
 	private static ConfigHandler setting;
 	private Connector connector;
 	private XmlHelper configXml;
+	
+	public ParseSetting getParseSetting(String configFilePath) throws DocumentException
+	{
+		XmlHelper xml = new XmlHelper(configFilePath);
+		ConfigHandler config = new ConfigHandler(xml);
+		ParseSetting parseSetting = config.getParseSetting();
+		return parseSetting;
+	}
 
 	public DataFactory(String configPath) throws DocumentException
 	{
 		configXml = new XmlHelper();
-		Log.info("加载配置文件：" + configPath);
+		Log.debug("加载配置文件：" + configPath);
 		configXml.loadXml(configPath);
 	}
 
@@ -46,7 +57,7 @@ public class DataFactory
 		if (setting.getConnectType().toLowerCase().equals("socket"))
 			connector = new SocketConnector(setting.getSocketConfig());
 		else if (setting.getConnectType().toLowerCase().equals("com"))
-			connector = new ComConnector(setting.getComConfig());
+			connector = ComConnector.getInstance(setting.getComConfig());
 
 		return connector;
 	}
@@ -122,6 +133,14 @@ public class DataFactory
 				protocolList.add(response.getProtocol());
 			}
 		}
+		else if (entityList.get(0).getClass().getSimpleName().equals("Request"))
+		{
+			for (int i = 0; i < entityList.size(); i++)
+			{
+				Request request = (Request) entityList.get(i);
+				protocolList.add(request.getSendProtocol());
+			}
+		}
 
 		XmlHelper dataXml = new XmlHelper();
 		dataXml.loadXml(settingFilePath);
@@ -129,6 +148,18 @@ public class DataFactory
 
 		proCfgList = dataConfig.getProtocolConfigList(protocolList);
 		return proCfgList;
+	}
+
+	/**
+	 * 获取deviceList.xml中配置的设备和设备对应的配置文件信息
+	 * 
+	 * @return
+	 * @author ken_8
+	 * @create 2017年10月11日 下午11:45:05
+	 */
+	public static Map<String, String> getDeviceInfo()
+	{
+		return ConfigHandler.getDeviceInfo();
 	}
 
 }

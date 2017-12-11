@@ -27,6 +27,8 @@ import com.k.util.filehelper.FileHelper;
  */
 public class Data
 {
+	private int increaseMem = -1;
+	private Map<String, Integer> proIncreaseMem;
 	private int fileOrderMem = 1;
 	private Map<String, Integer> proFileOrderMem;
 	private int fileRandomMem = 0;
@@ -36,10 +38,10 @@ public class Data
 
 	public Data()
 	{
+		proIncreaseMem = new HashMap<String, Integer>();
 		proFileOrderMem = new HashMap<String, Integer>();
 		Random r = new Random();
 		fileRandomMem = r.nextInt(500) % (499) + 1;
-		proFileOrderMem = new HashMap<String, Integer>();
 		partMem = new ArrayList<PartMem>();
 	}
 
@@ -52,6 +54,11 @@ public class Data
 			fileOrderMem = proFileOrderMem.get(proConfig.getProtocolName());
 		else
 			fileOrderMem = 1;
+		// 根据协议初始化自增时的缓存
+		if (proIncreaseMem.containsKey(proConfig.getProtocolName()))
+			increaseMem = proIncreaseMem.get(proConfig.getProtocolName());
+		else
+			increaseMem = -1;
 
 		// 根据配置开始生成数据
 		Map<String, Byte[]> res = new LinkedHashMap<String, Byte[]>();
@@ -81,6 +88,10 @@ public class Data
 		byte[] data = new byte[resTmpList.size()];
 		for (int i = 0; i < resTmpList.size(); i++)
 			data[i] = resTmpList.get(i);
+
+		if (this.increaseMem != -1)
+			this.proIncreaseMem.put(proConfig.getProtocolName(), this.increaseMem);
+		
 		fileOrderMem++;
 		proFileOrderMem.put(proConfig.getProtocolName(), fileOrderMem);
 		fileRandomMem = 0; // 重置为0，下次调用的时候判断要是0的话生成新的随机数，避免重复读取
@@ -247,10 +258,58 @@ public class Data
 			b = getRandomData(part);
 		else if (typeString.equals("check")) // 校验码
 			setPartMem(part);
+		else if (typeString.equals("increase"))
+			b = getIncreaseData(part);
 		else
 			GenerateDataException.nullNodeValueException(nodeName, "type");
 		return b;
 
+	}
+
+	/**
+	 * 生成自增的数据
+	 * 
+	 * @param part
+	 * @return
+	 * @author zhaokai
+	 * @create 2017年10月13日 下午5:55:14
+	 */
+	private byte[] getIncreaseData(Part part)
+	{
+		List<Part> childPartList = part.getChildNodeList();
+		if (childPartList.size() == 0)
+		{
+			// 考虑到一个文件中有多组协议，其中一个出问题其他的可能正确，因此使用警告继续程序进行而不是中断程序
+			Log.warn(part.getAttribute().get("name") + "节点缺少子节点");
+			return null;
+		}
+		Part childPart = childPartList.get(0);
+		// 若自增缓存变量未初始化，则初始化为配置中的起始值
+		if (this.increaseMem == -1)
+			this.increaseMem = Integer.parseInt(childPart.getValue());
+		String valueString = Integer.toString(this.increaseMem);
+		String classString = childPart.getValueClass();
+		byte[] b = null;
+		b = getByteArrayByClass(valueString, classString);
+		// 检查有没有配置fill-byte，若配置了则说明需要填充
+		String fillByteString = childPart.getFillByte();
+		int len = 0;
+		String lenString = childPart.getLen();
+		if (!StringUtils.isNullOrEmpty(lenString))
+			len = Integer.parseInt(lenString);
+		if (!StringUtils.isNullOrEmpty(fillByteString))
+		{
+			String fillDirectionString = childPart.getFillDirection();
+			b = doFill(b, fillByteString, fillDirectionString, len);
+		}
+
+		if (len > 0 && b.length != len)
+			Log.warn(part.getAttribute().get("name") + "节点生成数据的长度与配置中不一致");
+
+		// 每使用一次自增值
+		int step = Integer.parseInt(childPart.getSplit());
+		this.increaseMem += step;
+		return b;
 	}
 
 	private byte[] getAptoticData(Part part)
@@ -437,7 +496,7 @@ public class Data
 		String[] randomArray = valueString.split(splitString);
 		Random r = new Random();
 		String res = null;
-		//不同的随机方式
+		// 不同的随机方式
 		if (splitString.equals(","))
 		{
 			int randomIndex = r.nextInt(randomArray.length);
@@ -554,7 +613,7 @@ public class Data
 	 * @author zhaokai
 	 * @version 2017年4月13日 上午10:07:42
 	 */
-	private byte[] getByteArrayByClass(String src, String classString)
+	public static byte[] getByteArrayByClass(String src, String classString)
 	{
 		byte[] b = null;
 		if (classString == null)
@@ -592,6 +651,12 @@ public class Data
 			b[0] = (byte) ((intByte[0] << 8) | intByte[1]);
 			b[1] = (byte) ((intByte[2] << 8) | intByte[3]);
 			b = ByteUtils.byteToAsc(b);
+		}
+		else if (classString.toLowerCase().equals("inttohextobyte"))
+		{
+			int srcInt = Integer.parseInt(src);
+			String hexSrc = Integer.toHexString(srcInt).toUpperCase();
+			b = ByteUtils.getBytes(hexSrc);
 		}
 		else
 		{
