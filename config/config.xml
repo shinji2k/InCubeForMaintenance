@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<root>
+	<config>
+		<!-- 是否多线程模式 -->
+		<muti>false</muti>
+		<!-- 多线程配置文件路径 -->
+		<paramFile></paramFile>
+		<!-- socket or com -->
+		<type>com</type>
+	</config>
+
+	<com>
+		<!-- 串口号，注意：大小写敏感 -->
+		<!-- 若为多线程模式，此节点留空（需要保留节点） -->
+		<port>COM4</port>
+		<!-- 波特率 -->
+		<baudrate>9600</baudrate>
+		<!-- 数据位 -->
+		<databit>8</databit>
+		<!-- 停止位 -->
+		<stopbit>1</stopbit>
+		<!-- 校验位 none=无；even=奇校验；odd=偶校验；space=校验位总为0；mark=校验位总为1 -->
+		<!-- K的大课堂：所谓奇校验和偶校验，就是在发送一个byte时，在原有的8个二进制数之外再增加一位进行校验 -->
+		<!-- 对于奇校验来说，就是调整增加的那位，使8位二进制数中值位1的数总数有奇数个，偶校验反之 -->
+		<parity>none</parity>
+	</com>
+</root>

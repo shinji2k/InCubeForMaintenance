@@ -1,6 +1,7 @@
-package com.crscic.interfacetesttool.gui;
+package com.crscic.incube.maintenance.gui;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.Map;
 
 import org.dom4j.DocumentException;
@@ -17,13 +18,15 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.crscic.interfacetesttool.DataFactory;
-import com.crscic.interfacetesttool.Service;
-import com.crscic.interfacetesttool.config.ParseSetting;
-import com.crscic.interfacetesttool.connector.Connector;
-import com.crscic.interfacetesttool.data.ProtocolConfig;
-import com.crscic.interfacetesttool.exception.ParseXMLException;
-import com.crscic.interfacetesttool.log.Log;
+import com.crscic.incube.DataFactory;
+import com.crscic.incube.config.ParseSetting;
+import com.crscic.incube.config.ReplySetting;
+import com.crscic.incube.config.SendSetting;
+import com.crscic.incube.connector.Connector;
+import com.crscic.incube.data.ProtocolConfig;
+import com.crscic.incube.exception.ParseXMLException;
+import com.crscic.incube.log.Log;
+import com.crscic.incube.maintenance.Service;
 import com.k.util.StringUtils;
 
 /**
@@ -135,25 +138,28 @@ public final class GUI
 				}
 				int sentLoop = Integer.parseInt(sendLoopStr);
 				// 读取通信配置
-				DataFactory factory = new DataFactory("config\\rtu-device.xml");
-				Connector connector = factory.getConnector();
-				ParseSetting parseSetting = factory.getParseSetting(selectedConfig);
-				if (parseSetting == null)
+				DataFactory factory = new DataFactory("config\\config.xml");
+				
+				Map<String, Map<String, Map<String, String>>> connParamMapper = factory.getConnParam();
+				for (String connConf : connParamMapper.keySet())
 				{
-					Log.error("配置文件：" + selectedConfig + " 内容错误或不完整");
-					return;
-				}
-
+					Connector connector = factory.getConnector(connConf);
+					ParseSetting parseSetting = factory.getParseSetting(selectedConfig);
+					if (parseSetting == null)
+					{
+						Log.error("配置文件：" + selectedConfig + " 内容错误或不完整");
+						return;
+					}
 					
-				
-				java.util.List<ProtocolConfig> proCfgList = null;
-				Service service = new Service();
-				if (parseSetting != null)
-				{
-					proCfgList = factory.getDataConfig(parseSetting.getProtocolFile(), parseSetting.getRequest());
-					service.startParseServiceByNewThread(connector, parseSetting, proCfgList, sentLoop);
+					
+					List<ProtocolConfig> proCfgList = null;
+					Service service = new Service();
+					if (parseSetting != null)
+					{
+						proCfgList = DataFactory.getDataConfig(parseSetting.getProtocolFile(), parseSetting.getRequest());
+						service.startParseService(connector, parseSetting, proCfgList, sentLoop);
+					}
 				}
-				
 			}
 			catch (DocumentException e1)
 			{

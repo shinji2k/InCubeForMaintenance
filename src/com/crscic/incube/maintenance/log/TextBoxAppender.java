@@ -1,4 +1,4 @@
-package com.crscic.interfacetesttool.log;
+package com.crscic.incube.maintenance.log;
 
 import java.io.Serializable;
 import java.util.concurrent.locks.Lock;
@@ -17,7 +17,7 @@ import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.eclipse.swt.widgets.Display;
 
-import com.crscic.interfacetesttool.gui.GUI;
+import com.crscic.incube.maintenance.gui.GUI;
 
 /**
  * 

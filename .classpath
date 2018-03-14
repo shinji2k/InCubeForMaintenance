@@ -1,20 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
-		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="InterfaceTestTool/lib"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MyUtils"/>
+	<classpathentry kind="lib" path="lib/com.ibm.icu_58.2.0.v20170418-1837.jar"/>
+	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/jaxen-1.1-beta-6.jar"/>
-	<classpathentry kind="lib" path="lib/RXTXcomm.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-api-2.9.0.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-core-2.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/com.ibm.icu_58.2.0.v20170418-1837.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.core.commands_3.9.0.v20170530-1048.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.core.runtime_3.13.0.v20170207-1030.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.equinox.common_3.9.0.v20170207-1454.jar"/>
@@ -26,5 +19,9 @@
 	<classpathentry kind="lib" path="lib/org.eclipse.text_3.6.100.v20170203-0814.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.ui.forms_3.7.101.v20170815-1446.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.ui.workbench_3.110.1.v20170704-1208.jar"/>
+	<classpathentry kind="lib" path="lib/RXTXcomm.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-slf4j-impl-2.9.0.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/InCubeJar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_91"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

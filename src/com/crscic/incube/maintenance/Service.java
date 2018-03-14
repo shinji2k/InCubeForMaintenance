@@ -1,25 +1,20 @@
-package com.crscic.interfacetesttool;
+package com.crscic.incube.maintenance;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.dom4j.DocumentException;
-
-import com.crscic.interfacetesttool.config.ParseSetting;
-import com.crscic.interfacetesttool.config.ReplySetting;
-import com.crscic.interfacetesttool.config.Request;
-import com.crscic.interfacetesttool.config.Response;
-import com.crscic.interfacetesttool.config.SendSetting;
-import com.crscic.interfacetesttool.connector.Connector;
-import com.crscic.interfacetesttool.data.Data;
-import com.crscic.interfacetesttool.data.ProtocolConfig;
-import com.crscic.interfacetesttool.entity.Position;
-import com.crscic.interfacetesttool.exception.ConnectException;
-import com.crscic.interfacetesttool.exception.GenerateDataException;
-import com.crscic.interfacetesttool.exception.ParseXMLException;
-import com.crscic.interfacetesttool.log.Log;
+import com.crscic.incube.config.ParseSetting;
+import com.crscic.incube.config.Request;
+import com.crscic.incube.config.Response;
+import com.crscic.incube.connector.Connector;
+import com.crscic.incube.data.Data;
+import com.crscic.incube.data.ProtocolConfig;
+import com.crscic.incube.entity.Position;
+import com.crscic.incube.exception.ConnectException;
+import com.crscic.incube.exception.GenerateDataException;
+import com.crscic.incube.log.Log;
 import com.k.util.ByteUtils;
 import com.k.util.CollectionUtils;
 import com.k.util.StringUtils;
@@ -32,98 +27,7 @@ public class Service
 {
 	public static boolean running = true;
 
-	public void startParseService(Connector connector, ParseSetting parseSetting, List<ProtocolConfig> proCfgList,
-			int loopCnt)
-	{
-		new ParseService().startParseService(connector, parseSetting, proCfgList, loopCnt);
-	}
-
-	public void startSendService(Connector connector, SendSetting sendSetting, List<ProtocolConfig> proCfgList)
-	{
-		new SendService().startSendService(connector, sendSetting, proCfgList);
-	}
-
-	public void startReplyService(Connector connector, ReplySetting replySetting, List<ProtocolConfig> proCfgList)
-	{
-		new ReplyService().startReplyService(connector, replySetting, proCfgList);
-	}
-
-	/**
-	 * 启动发送和回复服务，此方法会创建线程，不能再LoadRunner中使用
-	 * 
-	 * @param connector
-	 * @param proSetting
-	 * @param dataConfig
-	 * @throws ParseXMLException
-	 * @throws GenerateDataException
-	 * @throws DocumentException
-	 * @throws ConnectException
-	 * @author ken_8 2017年9月19日 上午12:07:27
-	 */
-	public void startService(Connector connector, SendSetting sendSetting, List<ProtocolConfig> sendProCfgList,
-			ReplySetting replySetting, List<ProtocolConfig> replyProCfgList)
-	{
-		Thread sendThread = new Thread(new SendService(connector, sendSetting, sendProCfgList));
-		sendThread.start();
-		Thread replyThread = new Thread(new ReplyService(connector, replySetting, replyProCfgList));
-		replyThread.start();
-	}
-
-	/**
-	 * 创建线程执行发送服务，不能在LR中使用
-	 * 
-	 * @param connector
-	 * @param sendSetting
-	 * @param sendProCfgList
-	 * @author zhaokai
-	 * @create 2017年10月10日 上午9:47:44
-	 */
-	public void startSendServiceByNewThread(Connector connector, SendSetting sendSetting,
-			List<ProtocolConfig> sendProCfgList)
-	{
-		if (!connector.isOpen())
-		{
-			try
-			{
-				connector.openConnect();
-			}
-			catch (ConnectException e)
-			{
-				Log.error("打开连接失败", e);
-			}
-		}
-		Thread sendThread = new Thread(new SendService(connector, sendSetting, sendProCfgList));
-		sendThread.start();
-	}
-
-	/**
-	 * 创建线程执行回复服务，不能在LR中使用
-	 * 
-	 * @param connector
-	 * @param replySetting
-	 * @param replyProCfgList
-	 * @author zhaokai
-	 * @create 2017年10月10日 上午9:48:25
-	 */
-	public void startReplyServiceByNewThread(Connector connector, ReplySetting replySetting,
-			List<ProtocolConfig> replyProCfgList)
-	{
-		if (!connector.isOpen())
-		{
-			try
-			{
-				connector.openConnect();
-			}
-			catch (ConnectException e)
-			{
-				Log.error("打开连接失败", e);
-			}
-		}
-		Thread replyThread = new Thread(new ReplyService(connector, replySetting, replyProCfgList));
-		replyThread.start();
-	}
-
-	public void startParseServiceByNewThread(Connector connector, ParseSetting parseSetting,
+	public void startParseService(Connector connector, ParseSetting parseSetting,
 			List<ProtocolConfig> parseProCfgList, int loopCnt)
 	{
 		if (!connector.isOpen())
@@ -139,11 +43,6 @@ public class Service
 		}
 		Thread parseThread = new Thread(new ParseService(connector, parseSetting, parseProCfgList, loopCnt));
 		parseThread.start();
-	}
-
-	private byte[] getQuoteByteArray(List<Byte> src, Position quotePos)
-	{
-		return CollectionUtils.subArray(src, quotePos.getStartPos(), quotePos.getStopPos());
 	}
 
 	private byte[] getQuoteByteArray(byte[] src, Position quotePos)
@@ -297,234 +196,6 @@ public class Service
 		return CollectionUtils.toByteArray(keyByteList);
 	}
 
-	class SendService implements Runnable
-	{
-		private Connector connector;
-		private SendSetting sendSetting;
-		private List<ProtocolConfig> proCfgList;
-
-		public SendService()
-		{
-		}
-
-		public SendService(Connector connector, SendSetting sendSetting, List<ProtocolConfig> proCfgList)
-		{
-			this.connector = connector;
-			this.sendSetting = sendSetting;
-			this.proCfgList = proCfgList;
-		}
-
-		/**
-		 * 单独启动发送服务，根据配置向对端发送报文
-		 * 
-		 * @author ken_8 2017年9月18日 下午11:50:38
-		 */
-		public void startSendService(Connector connector, SendSetting sendSetting, List<ProtocolConfig> proCfgList)
-		{
-			try
-			{
-				if (!connector.isOpen())
-					connector.openConnect();
-			}
-			catch (ConnectException e)
-			{
-				Log.error("打开连接失败", e);
-				return;
-			}
-			// 初始化发送间隔
-			Map<String, Long> interval = new HashMap<String, Long>();
-			Map<String, Long> protocolMap = sendSetting.getProtocolMap();
-			int proCnt = sendSetting.getProtocolMap().size();
-			if (proCnt == 0)
-			{
-				Log.warn("没有配置发送内容，请检查配置文件");
-				return;
-			}
-			for (String protocol : protocolMap.keySet())
-				interval.put(protocol, System.currentTimeMillis());
-			Data sendData = new Data();
-			while (running)
-			{
-				try
-				{
-					// 生成协议数据
-					for (String protocol : protocolMap.keySet())
-					{
-						Long currInterval = System.currentTimeMillis() - interval.get(protocol);
-						if (currInterval >= protocolMap.get(protocol))
-						{
-							byte[] data = sendData.getSendData(getProtocolConfigByProtocolName(proCfgList, protocol),
-									new HashMap<String, byte[]>());
-							Log.info("发送协议" + protocol + "：" + ByteUtils.byteToHexString(data));
-							connector.send(data);
-							interval.put(protocol, System.currentTimeMillis());
-						}
-					}
-					Thread.sleep(300);
-				}
-				catch (InterruptedException e)
-				{
-					Log.error("Sleep失败");
-					e.printStackTrace();
-				}
-				catch (GenerateDataException e)
-				{
-					Log.error("报文生成失败", e);
-				}
-				catch (ConnectException e)
-				{
-					Log.error("报文发送失败", e);
-				}
-			}
-
-		}
-
-		@Override
-		public void run()
-		{
-			startSendService(connector, sendSetting, proCfgList);
-		}
-
-	}
-
-	class ReplyService implements Runnable
-	{
-		private Connector connector;
-		private ReplySetting replySetting;
-		private List<ProtocolConfig> proCfgList;
-
-		public ReplyService()
-		{
-		}
-
-		public ReplyService(Connector connector, ReplySetting replySetting, List<ProtocolConfig> proCfgList)
-		{
-			this.connector = connector;
-			this.replySetting = replySetting;
-			this.proCfgList = proCfgList;
-		}
-
-		/**
-		 * 单独启动回复服务，自动回复配置的报文
-		 * 
-		 * @author ken_8 2017年9月18日 下午11:51:13
-		 */
-		public void startReplyService(Connector connector, ReplySetting replySetting, List<ProtocolConfig> proCfgList)
-		{
-			try
-			{
-				if (!connector.isOpen())
-					connector.openConnect();
-			}
-			catch (ConnectException e)
-			{
-				Log.error("打开连接失败", e);
-				return;
-			}
-
-			Data sendData = new Data();
-
-			List<Byte> recvList = new ArrayList<Byte>();
-			try
-			{
-				while (running)
-				{
-					// 没有进行自动回复配置，无需进行自动回复
-					if (replySetting.getResponseList().size() == 0)
-					{
-						Log.error("没有检测到回复配置");
-						break;
-					}
-
-					// 将收到的内容添加到缓冲区
-					recvList.addAll(connector.receive());
-					// 连接异常中断时会出现接收数据为空的情况
-					if (recvList.size() == 0)
-					{
-						if (!connector.isOpen())
-						{
-							connector.closeConnect();
-							connector.openConnect();
-						}
-						continue;
-					}
-
-					for (Response response : replySetting.getResponseList())
-					{
-
-						// 查看是否完整的请求，如果是完整的，则取出完整请求并从缓冲区中移除该请求
-						List<List<Byte>> requestList = getFullMessage(recvList, response.getHead(), response.getTail());
-						if (requestList.size() == 0) // 无完整请求
-							continue;
-						// 返回的是多条完整的请求，循环处理每个请求
-						for (List<Byte> singleRequest : requestList)
-						{
-							Log.debug("收到请求：" + ByteUtils.byteToHexString(singleRequest));
-							// 是不是需要回复的请求
-							byte[] keyByteArray = Data.getByteArrayByClass(response.getValue(),
-									response.getNodeClass());
-							if (!isPaired(singleRequest, response.getCmdTypePos(), keyByteArray))
-							{
-								Log.debug("不是需要回复的请求");
-								continue;
-							}
-							Log.info("收到请求：" + ByteUtils.byteToHexString(singleRequest));
-							// 设置引用字段
-							Map<String, byte[]> quoteMap = new HashMap<String, byte[]>();
-							Map<String, Position> quoteInfo = response.getQuoteInfo() == null
-									? new HashMap<String, Position>()
-									: response.getQuoteInfo();
-							for (String quotePartName : quoteInfo.keySet())
-							{
-								byte[] quoteBytes = getQuoteByteArray(singleRequest, quoteInfo.get(quotePartName));
-								Log.debug("引用内容：" + ByteUtils.byteToHexString(quoteBytes));
-								Log.debug("    字段：" + quotePartName + " | 值：" + ByteUtils.byteToHexString(quoteBytes));
-								quoteMap.put(quotePartName, quoteBytes);
-							}
-
-							// 获取返回消息
-							byte[] data = sendData.getSendData(
-									getProtocolConfigByProtocolName(proCfgList, response.getProtocol()), quoteMap);
-							Log.info("回复协议" + response.getProtocol() + "：" + ByteUtils.byteToHexString(data));
-							connector.send(data);
-						}
-					}
-
-					Thread.sleep(300);
-				}
-			}
-			catch (InterruptedException e)
-			{
-				Log.error("Sleep失败");
-			}
-			catch (GenerateDataException e)
-			{
-				Log.error("报文生成失败", e);
-			}
-			catch (ConnectException e)
-			{
-				Log.error("报文发送失败", e);
-			}
-			finally
-			{
-				try
-				{
-					connector.closeConnect();
-				}
-				catch (ConnectException e)
-				{
-					e.printStackTrace();
-				}
-			}
-		}
-
-		@Override
-		public void run()
-		{
-			startReplyService(connector, replySetting, proCfgList);
-		}
-	}
-
 	class ParseService implements Runnable
 	{
 		private Connector connector;
@@ -615,7 +286,7 @@ public class Service
 								// 生成请求数据
 								ProtocolConfig proConfig = getProtocolConfigByProtocolName(proCfgList,
 										request.getSendProtocol());
-								b = sendData.getSendData(proConfig, new HashMap<String, byte[]>());
+								b = sendData.getSendData(proConfig, new HashMap<String, byte[]>(), null);
 							}
 							// 读取response节点配置
 							Response response = request.getResponse();

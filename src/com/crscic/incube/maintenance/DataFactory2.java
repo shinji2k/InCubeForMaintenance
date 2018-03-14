@@ -1,4 +1,4 @@
-package com.crscic.interfacetesttool;
+package com.crscic.incube.maintenance;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,23 +7,24 @@ import java.util.Map;
 
 import org.dom4j.DocumentException;
 
-import com.crscic.interfacetesttool.config.ConfigHandler;
-import com.crscic.interfacetesttool.config.ParseSetting;
-import com.crscic.interfacetesttool.config.ReplySetting;
-import com.crscic.interfacetesttool.config.Request;
-import com.crscic.interfacetesttool.config.Response;
-import com.crscic.interfacetesttool.config.SendSetting;
-import com.crscic.interfacetesttool.connector.ComConnector;
-import com.crscic.interfacetesttool.connector.Connector;
-import com.crscic.interfacetesttool.connector.SocketConnector;
-import com.crscic.interfacetesttool.data.Data;
-import com.crscic.interfacetesttool.data.ProtocolConfig;
-import com.crscic.interfacetesttool.exception.GenerateDataException;
-import com.crscic.interfacetesttool.exception.ParseXMLException;
-import com.crscic.interfacetesttool.log.Log;
-import com.crscic.interfacetesttool.xmlhelper.XmlHelper;
+import com.crscic.incube.config.ConfigHandler;
+import com.crscic.incube.config.ParseSetting;
+import com.crscic.incube.config.ReplySetting;
+import com.crscic.incube.config.Request;
+import com.crscic.incube.config.Response;
+import com.crscic.incube.config.SendSetting;
+import com.crscic.incube.connector.ComConnector;
+import com.crscic.incube.connector.Connector;
+import com.crscic.incube.connector.SocketConnector;
+import com.crscic.incube.data.Data;
+import com.crscic.incube.data.ProtocolConfig;
+import com.crscic.incube.exception.GenerateDataException;
+import com.crscic.incube.exception.ParseXMLException;
+import com.crscic.incube.log.Log;
+import com.crscic.incube.xmlhelper.XmlHelper;
 
-public class DataFactory
+
+public class DataFactory2
 {
 	private static ConfigHandler setting;
 	private Connector connector;
@@ -37,7 +38,7 @@ public class DataFactory
 		return parseSetting;
 	}
 
-	public DataFactory(String configPath) throws DocumentException
+	public DataFactory2(String configPath) throws DocumentException
 	{
 		configXml = new XmlHelper();
 		Log.debug("加载配置文件：" + configPath);
@@ -99,7 +100,7 @@ public class DataFactory
 	public byte[] getSendData(ProtocolConfig proConfig) throws GenerateDataException
 	{
 		Data data = new Data();
-		return data.getSendData(proConfig, new HashMap<String, byte[]>());
+		return data.getSendData(proConfig, new HashMap<String, byte[]>(), null);
 	}
 
 	/**

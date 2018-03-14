@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.crscic.interfacetesttool.log;
+package com.crscic.incube.maintenance.log;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
  * 
  * @author zhaokai 2017年9月7日 下午2:47:01
  */
-public class Log
+public class Log2
 {
 	private static final Logger logger = LogManager.getLogger();
 

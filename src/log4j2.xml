@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<configuration status="info" packages="com.crscic.interfacetesttool.log">
+<configuration status="info" packages="com.crscic.incube.maintenance.log">
 	<Properties>
 		<Property name="level">info</Property>
 	</Properties>
