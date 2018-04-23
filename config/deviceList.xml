@@ -2,5 +2,5 @@
 <root desc="设备列表">
 	<device file="config\device\air-condition\parseConfig.xml">测试空调</device>
 	<device file="config\device\combinedPower\parseCombinedPower.xml">组合电源监测模块</device>
-	<device file="config\device\air-condition\some3.xml">智能防雷箱</device>
+	<device file="config\device\LightningProtectionBox\LightningProtectionBox.xml">智能防雷箱</device>
 </root>
