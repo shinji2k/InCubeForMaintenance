@@ -45,15 +45,20 @@ public class TextBoxAppender extends AbstractAppender
 			final byte[] bytes = getLayout().toByteArray(event);// 日志二进制文件，输出到指定位置就行
 			// 下面这个是要实现的自定义逻辑
 			/**
-			 * 异步修改GUI中的控件信息
-			 * Java不允许UI线程以外的线程修改UI界面
-			 * 不这么写会抛出SWT异常: org.eclipse.swt.SWTException: Invalid thread access
+			 * 异步修改GUI中的控件信息 Java不允许UI线程以外的线程修改UI界面 不这么写会抛出SWT异常:
+			 * org.eclipse.swt.SWTException: Invalid thread access
 			 */
 			Display.getDefault().syncExec(new Runnable()
 			{
 				public void run()
 				{
-					GUI.outputText.append(new String(bytes));
+					if (!GUI.outputText.isDisposed())
+					{
+						if (GUI.outputText.getLineCount() > 9999)
+							GUI.outputText.setText("");
+						GUI.outputText.append(new String(bytes));
+						GUI.outputText.setTopIndex(Integer.MAX_VALUE);
+					}
 				}
 			});
 		}

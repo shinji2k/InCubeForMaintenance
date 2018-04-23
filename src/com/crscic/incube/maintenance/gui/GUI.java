@@ -9,6 +9,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -17,11 +18,10 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.crscic.incube.DataFactory;
 import com.crscic.incube.config.ParseSetting;
-import com.crscic.incube.config.ReplySetting;
-import com.crscic.incube.config.SendSetting;
 import com.crscic.incube.connector.Connector;
 import com.crscic.incube.data.ProtocolConfig;
 import com.crscic.incube.exception.ParseXMLException;
@@ -38,6 +38,8 @@ public final class GUI
 	private static GUI gui;
 	private String selectedConfig;
 
+	public static Image LOGO_IMG = SWTResourceManager.getImage(GUI.class,
+			"/com/crscic/incube/maintenance/gui/resource/logo.png");
 	private static Display display = Display.getDefault(); // 1.创建一个Display
 	private static Shell shell = new Shell();
 	private static Label deviceLabel = new Label(shell, SWT.NONE);
@@ -56,6 +58,7 @@ public final class GUI
 		cntText.setLayoutData(gd_cntText);
 		shell.setSize(800, 600);
 		shell.setText("接口调试工具");
+		shell.setImage(LOGO_IMG);
 		shell.setLayout(new GridLayout(6, false));
 
 		// 初始化

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <configuration status="info" packages="com.crscic.incube.maintenance.log">
 	<Properties>
 		<Property name="level">info</Property>
@@ -14,10 +13,14 @@
 			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n" />
 		</Console>
 		<!--这个会打印出所有的信息，日志会自动存入 -->
-		<RollingFile name="RollingFile" fileName="./logs/app.log"
-			filePattern="./logs/app-%d{yyyy-MM-dd}.log">
-			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n" />
-			<Policies />
+		<RollingFile name="DailyRollingFile" fileName="./logs/app.log"
+			filePattern="./logs/app-%d{yyyy-MM-dd}-%i.log">
+			<ThresholdFilter level="warn" onMatch="ACCEPT"	onMismatch="DENY" />
+			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger %msg%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"/>
+	　　　　　　　<SizeBasedTriggeringPolicy size="10 MB" /> 
+			</Policies>
 		</RollingFile>
 		<!-- 自定义的Appender，用于实现将日志输出到GUI -->
 		<TextBoxAppender name="TextBoxAppender">
@@ -28,7 +31,7 @@
 	<loggers>
 		<!--建立一个默认的root的logger -->
 		<root level="${level}">
-			<appender-ref ref="RollingFile" />
+			<appender-ref ref="DailyRollingFile" />
 			<appender-ref ref="Console" />
 			<appender-ref ref="TextBoxAppender"/>
 		</root>
