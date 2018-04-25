@@ -27,8 +27,8 @@ public class Service
 {
 	public static boolean running = true;
 
-	public void startParseService(Connector connector, ParseSetting parseSetting,
-			List<ProtocolConfig> parseProCfgList, int loopCnt)
+	public void startParseService(Connector connector, ParseSetting parseSetting, List<ProtocolConfig> parseProCfgList,
+			int loopCnt)
 	{
 		if (!connector.isOpen())
 		{
@@ -322,8 +322,17 @@ public class Service
 
 								// 查看是否完整的响应，如果是完整的，则取出响应并从缓冲区中移除该响应
 								// 这个response不是指配置中的Response节点，而是实际的响应报文
-								List<List<Byte>> responseMsgList = getFullMessage(recvList, response.getHead(),
-										response.getTail());
+								List<List<Byte>> responseMsgList = new ArrayList<List<Byte>>();
+								if (StringUtils.isNullOrEmpty(response.getHead())
+										&& StringUtils.isNullOrEmpty(response.getTail()))
+								{
+									responseMsgList.add(CollectionUtils.copyList(recvList));
+									recvList.clear();
+								}
+								else
+								{
+									responseMsgList = getFullMessage(recvList, response.getHead(), response.getTail());
+								}
 								if (requestList.size() == 0) // 无完整请求
 									continue;
 								// 返回的是多条完整的请求，循环处理每个请求
@@ -342,6 +351,7 @@ public class Service
 									requestList.remove(request);
 									continue nextRequest;
 								}
+								responseMsgList.clear();
 								// 是否要去掉sleep？
 								Thread.sleep(50);
 							}

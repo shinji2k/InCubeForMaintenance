@@ -11,10 +11,10 @@
 	<request>
 		<pro>queryAnalog</pro>
 		<response>
-			<field>4,5</field><!-- 4,5 是地址位 -->
+			<field>1,1</field><!-- 4,5 是地址位 -->
 			<value></value>
-			<head>7E</head>
-			<tail>0D</tail>
+			<head></head>
+			<tail></tail>
 			<class>byte</class>
 			<!-- 
 				这里的quote和reply中的不同，这里指的是组装好的请求中需要使用的字段位置，
@@ -25,7 +25,7 @@
 			-->
 			<quote>
 				<!-- 属性name只是单纯给这个节点起个名字 -->
-				<field name="adr">4,5</field>
+				<field name="adr">1,1</field>
 			</quote>
 		</response>
 	</request>

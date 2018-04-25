@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root desc="分散空调">
 	<queryAnalog desc="查询模拟量">
-		<part name="soi" desc="数据包头">
+		<!-- <part name="soi" desc="数据包头">
 			<type>aptotic</type>
 			<value>7E</value>
 			<class>byte</class>
@@ -18,34 +18,33 @@
 			<value>
 				<part name="increase" desc="节点自增需要的信息">
 					<type>increase</type>
-					<!-- 由 1 开始-->
 					<value>1</value>
-					<!-- 每次加 1 -->
 					<split>1</split>
-					<fill-byte>30</fill-byte>
-					<fill-direction>left</fill-direction>
-					<class>inttohextobyte</class>
-					<len>2</len>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>int</class>
+					<len>1</len>
 				</part>
 			</value>
-			<class>hextobyte</class>
-			<len>2</len>
-		</part>
-		<part name="cid1" desc="设备类型描述,分散空调为60">
+			<class>int</class>
+			<len>1</len>
+		</part> -->
+		<part name="adr" desc="设备地址描述(1~254)">
 			<type>aptotic</type>
-			<value>3630</value>
+			<value>01
+			</value>
 			<class>byte</class>
-			<len>2</len>
+			<len>1</len>
 		</part>
-		<part name="cid2" desc="返回码">
+		<part name="function" desc="设备类型描述,分散空调为60">
 			<type>aptotic</type>
-			<value>3432</value>
+			<value>03</value>
 			<class>byte</class>
-			<len>2</len>
+			<len>1</len>
 		</part>
-		<part name="length" desc="info字节长度，包括lenid和lchksum">
+		<part name="data" desc="info字节长度，包括lenid和lchksum">
 			<type>aptotic</type>
-			<value>30303030</value>
+			<value>00010003</value>
 			<class>byte</class>
 			<len>4</len>
 		</part>
@@ -53,8 +52,8 @@
 			<type>check</type>
 			<value>
 				<part name="check-info" desc="参加计算校验的字段">
-					<type>chksum</type>
-					<value>ver,adr,cid1,cid2,length</value>
+					<type>crc</type>
+					<value>adr,function,data</value>
 					<split>,</split>
 					<fill-byte></fill-byte>
 					<fill-direction></fill-direction>
@@ -63,13 +62,13 @@
 				</part>
 			</value>
 			<class>byte</class>
-			<len>4</len>
+			<len>2</len>
 		</part>
-		<part name="eoi" desc="结束吗">
+		<!-- <part name="eoi" desc="结束吗">
 			<type>aptotic</type>
 			<value>0d</value>
 			<class>byte</class>
 			<len>1</len>
-		</part>
+		</part> -->
 	</queryAnalog>
 </root>
