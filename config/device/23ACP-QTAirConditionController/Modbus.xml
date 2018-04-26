@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<queryOutputSwitch desc="查询只读的输出开关数据">
+		<part name="adr" desc="设备地址描述(1~254)">
+			<type>increase</type>
+			<value>
+				<part name="increase" desc="节点自增需要的信息">
+					<type>increase</type>
+					<value>1</value>
+					<split>1</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>int8</class>
+					<len>1</len>
+				</part>
+			</value>
+			<class></class>
+			<len>1</len>
+		</part>
+		<part name="function" desc="">
+			<type>aptotic</type>
+			<value>01</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="data" desc="">
+			<type>aptotic</type>
+			<value>0000000f</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="chksum" desc="校验和码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="参加计算校验的字段">
+					<type>crc</type>
+					<value>adr,function,data</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>2</len>
+		</part>
+	</queryOutputSwitch>
+
+	<queryIutputSwitch desc="只读的输入开关数据">
+		<part name="adr" desc="设备地址描述(1~254)">
+			<type>increase</type>
+			<value>
+				<part name="increase" desc="节点自增需要的信息">
+					<type>increase</type>
+					<value>1</value>
+					<split>1</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>int8</class>
+					<len>1</len>
+				</part>
+			</value>
+			<class></class>
+			<len>1</len>
+		</part>
+		<part name="function" desc="">
+			<type>aptotic</type>
+			<value>02</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="data" desc="">
+			<type>aptotic</type>
+			<value>0000000b</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="chksum" desc="校验和码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="参加计算校验的字段">
+					<type>crc</type>
+					<value>adr,function,data</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>2</len>
+		</part>
+	</queryIutputSwitch>
+
+	<setSwitch0 desc="可读写的开关数据-地址0">
+		<part name="adr" desc="设备地址描述(1~254)">
+			<type>increase</type>
+			<value>
+				<part name="increase" desc="节点自增需要的信息">
+					<type>increase</type>
+					<value>1</value>
+					<split>1</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>int8</class>
+					<len>1</len>
+				</part>
+			</value>
+			<class></class>
+			<len>1</len>
+		</part>
+		<part name="function" desc="">
+			<type>aptotic</type>
+			<value>05</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="data" desc="">
+			<type>aptotic</type>
+			<value>00000000</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="chksum" desc="校验和码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="参加计算校验的字段">
+					<type>crc</type>
+					<value>adr,function,data</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>2</len>
+		</part>
+	</setSwitch0>
+
+	<setSwitch1 desc="可读写的开关数据-地址1">
+		<part name="adr" desc="设备地址描述(1~254)">
+			<type>increase</type>
+			<value>
+				<part name="increase" desc="节点自增需要的信息">
+					<type>increase</type>
+					<value>1</value>
+					<split>1</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>int8</class>
+					<len>1</len>
+				</part>
+			</value>
+			<class></class>
+			<len>1</len>
+		</part>
+		<part name="function" desc="">
+			<type>aptotic</type>
+			<value>05</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="data" desc="">
+			<type>aptotic</type>
+			<value>00010000</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="chksum" desc="校验和码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="参加计算校验的字段">
+					<type>crc</type>
+					<value>adr,function,data</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>2</len>
+		</part>
+	</setSwitch1>
+
+	<queryInt desc="只读的整型变量(温度)">
+		<part name="adr" desc="设备地址描述(1~254)">
+			<type>increase</type>
+			<value>
+				<part name="increase" desc="节点自增需要的信息">
+					<type>increase</type>
+					<value>1</value>
+					<split>1</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>int8</class>
+					<len>1</len>
+				</part>
+			</value>
+			<class></class>
+			<len>1</len>
+		</part>
+		<part name="function" desc="">
+			<type>aptotic</type>
+			<value>04</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="data" desc="">
+			<type>aptotic</type>
+			<value>00000006</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="chksum" desc="校验和码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="参加计算校验的字段">
+					<type>crc</type>
+					<value>adr,function,data</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>2</len>
+		</part>
+	</queryInt>
+
+	<读整型变量 desc="可读写的整型变量(参数)">
+		<part name="adr" desc="设备地址描述(1~254)">
+			<type>increase</type>
+			<value>
+				<part name="increase" desc="节点自增需要的信息">
+					<type>increase</type>
+					<value>1</value>
+					<split>1</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>int8</class>
+					<len>1</len>
+				</part>
+			</value>
+			<class></class>
+			<len>1</len>
+		</part>
+		<part name="function" desc="">
+			<type>aptotic</type>
+			<value>03</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="data" desc="">
+			<type>aptotic</type>
+			<value>00000006</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="chksum" desc="校验和码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="参加计算校验的字段">
+					<type>crc</type>
+					<value>adr,function,data</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>2</len>
+		</part>
+	</读整型变量>
+
+	<设定温度 desc="可读写的整型变量(参数)">
+		<part name="adr" desc="设备地址描述(1~254)">
+			<type>increase</type>
+			<value>
+				<part name="increase" desc="节点自增需要的信息">
+					<type>increase</type>
+					<value>1</value>
+					<split>1</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>int8</class>
+					<len>1</len>
+				</part>
+			</value>
+			<class></class>
+			<len>1</len>
+		</part>
+		<part name="function" desc="">
+			<type>aptotic</type>
+			<value>06</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="data" desc="后两字节为温度，范围16-30度整型">
+			<type>aptotic</type>
+			<value>00010014</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="chksum" desc="校验和码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="参加计算校验的字段">
+					<type>crc</type>
+					<value>adr,function,data</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>2</len>
+		</part>
+	</设定温度>
+	
+	<设定风速 desc="可读写的整型变量(参数)">
+		<part name="adr" desc="设备地址描述(1~254)">
+			<type>increase</type>
+			<value>
+				<part name="increase" desc="节点自增需要的信息">
+					<type>increase</type>
+					<value>1</value>
+					<split>1</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>int8</class>
+					<len>1</len>
+				</part>
+			</value>
+			<class></class>
+			<len>1</len>
+		</part>
+		<part name="function" desc="">
+			<type>aptotic</type>
+			<value>06</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="data" desc="后两字节为风速，范围0-3整型">
+			<type>aptotic</type>
+			<value>00020001</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="chksum" desc="校验和码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="参加计算校验的字段">
+					<type>crc</type>
+					<value>adr,function,data</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>2</len>
+		</part>
+	</设定风速>
+	
+	<设定工作模式 desc="可读写的整型变量(参数)">
+		<part name="adr" desc="设备地址描述(1~254)">
+			<type>increase</type>
+			<value>
+				<part name="increase" desc="节点自增需要的信息">
+					<type>increase</type>
+					<value>1</value>
+					<split>1</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>int8</class>
+					<len>1</len>
+				</part>
+			</value>
+			<class></class>
+			<len>1</len>
+		</part>
+		<part name="function" desc="">
+			<type>aptotic</type>
+			<value>06</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="data" desc="后两字节为工作模式，范围1-4整型">
+			<type>aptotic</type>
+			<value>00040001</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="chksum" desc="校验和码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="参加计算校验的字段">
+					<type>crc</type>
+					<value>adr,function,data</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>2</len>
+		</part>
+	</设定工作模式>
+	
+	<设定机器地址码 desc="可读写的整型变量(参数)">
+		<part name="adr" desc="设备地址描述(1~254)">
+			<type>increase</type>
+			<value>
+				<part name="increase" desc="节点自增需要的信息">
+					<type>increase</type>
+					<value>1</value>
+					<split>1</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>int8</class>
+					<len>1</len>
+				</part>
+			</value>
+			<class></class>
+			<len>1</len>
+		</part>
+		<part name="function" desc="">
+			<type>aptotic</type>
+			<value>06</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="data" desc="后两字节为机器地址码，范围1-255整型">
+			<type>aptotic</type>
+			<value>00050001</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="chksum" desc="校验和码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="参加计算校验的字段">
+					<type>crc</type>
+					<value>adr,function,data</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>2</len>
+		</part>
+	</设定机器地址码>
+</root>

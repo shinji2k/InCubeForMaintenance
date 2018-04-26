@@ -301,7 +301,8 @@ public class Service
 							if (!noRetry)
 								Log.debug("第" + (loop + 1) + "次发送...");
 							connector.send(b);
-							Log.info("发送：" + ByteUtils.byteToHexString(b));
+							Log.info("发送协议" + request.getSendProtocol() + "：" + ByteUtils.byteToHexString(b));
+							Thread.sleep(100);
 							// 理论上发完请求会马上回复内容
 							long beginTime = System.currentTimeMillis();
 							// 将收到的内容添加到缓冲区
@@ -353,7 +354,7 @@ public class Service
 								}
 								responseMsgList.clear();
 								// 是否要去掉sleep？
-								Thread.sleep(50);
+								Thread.sleep(timeout);
 							}
 							failedMem.put(request.getSendProtocol(), b);
 							Log.debug("本次接收配对超时");

@@ -3,4 +3,5 @@
 	<device file="config\device\air-condition\parseConfig.xml">测试空调</device>
 	<device file="config\device\combinedPower\parseCombinedPower.xml">组合电源监测模块</device>
 	<device file="config\device\LightningProtectionBox\LightningProtectionBox.xml">智能防雷箱</device>
+	<device file="config\device\23ACP-QTAirConditionController\23ACP-QTAirConditionController.xml">23ACP-QT机房空调控制器</device>
 </root>

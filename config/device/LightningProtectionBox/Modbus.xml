@@ -13,6 +13,7 @@
 			<class>byte</class>
 			<len>2</len>
 		</part>
+	 -->
 		<part name="adr" desc="设备地址描述(1~254)">
 			<type>increase</type>
 			<value>
@@ -22,18 +23,11 @@
 					<split>1</split>
 					<fill-byte></fill-byte>
 					<fill-direction></fill-direction>
-					<class>int</class>
+					<class>int8</class>
 					<len>1</len>
 				</part>
 			</value>
-			<class>int</class>
-			<len>1</len>
-		</part> -->
-		<part name="adr" desc="设备地址描述(1~254)">
-			<type>aptotic</type>
-			<value>01
-			</value>
-			<class>byte</class>
+			<class></class>
 			<len>1</len>
 		</part>
 		<part name="function" desc="设备类型描述,分散空调为60">
@@ -44,7 +38,7 @@
 		</part>
 		<part name="data" desc="info字节长度，包括lenid和lchksum">
 			<type>aptotic</type>
-			<value>00010003</value>
+			<value>00060002</value>
 			<class>byte</class>
 			<len>4</len>
 		</part>
@@ -71,4 +65,51 @@
 			<len>1</len>
 		</part> -->
 	</queryAnalog>
+	
+	<queryDI>
+		<part name="adr" desc="设备地址描述(1~254)">
+			<type>increase</type>
+			<value>
+				<part name="increase" desc="节点自增需要的信息">
+					<type>increase</type>
+					<value>1</value>
+					<split>1</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class>int8</class>
+					<len>1</len>
+				</part>
+			</value>
+			<class></class>
+			<len>1</len>
+		</part>
+		<part name="function" desc="设备类型描述,分散空调为60">
+			<type>aptotic</type>
+			<value>03</value>
+			<class>byte</class>
+			<len>1</len>
+		</part>
+		<part name="data" desc="info字节长度，包括lenid和lchksum">
+			<type>aptotic</type>
+			<value>00060002</value>
+			<class>byte</class>
+			<len>4</len>
+		</part>
+		<part name="chksum" desc="校验和码">
+			<type>check</type>
+			<value>
+				<part name="check-info" desc="参加计算校验的字段">
+					<type>crc</type>
+					<value>adr,function,data</value>
+					<split>,</split>
+					<fill-byte></fill-byte>
+					<fill-direction></fill-direction>
+					<class></class>
+					<len></len>
+				</part>
+			</value>
+			<class>byte</class>
+			<len>2</len>
+		</part>
+	</queryDI>
 </root>

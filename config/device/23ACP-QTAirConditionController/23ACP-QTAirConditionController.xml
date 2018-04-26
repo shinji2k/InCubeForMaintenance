@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root desc="现场设备调试配置">
+	<recv-setting>
+		<timeout>1000</timeout>
+		<retry>3</retry>
+	</recv-setting>
+
+	<!-- 协议文件路径 -->
+	<protocol-file>config/device/23ACP-QTAirConditionController/Modbus.xml</protocol-file>
+
+	<request>
+		<pro>queryOutputSwitch</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	<request>
+		<pro>queryIutputSwitch</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	<request>
+		<pro>setSwitch0</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	<request>
+		<pro>setSwitch1</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	<request>
+		<pro>queryInt</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	<request>
+		<pro>读整型变量</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	<request>
+		<pro>设定温度</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	<request>
+		<pro>设定风速</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	<request>
+		<pro>设定工作模式</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	<request>
+		<pro>设定机器地址码</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+</root>
