@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root desc="现场设备调试配置">
+	<recv-setting>
+		<timeout>1000</timeout>
+		<retry>3</retry>
+	</recv-setting>
+
+	<!-- 协议文件路径 -->
+	<protocol-file>config/device/ACAP-RS485-EK400BSpiralChiller/Modbus.xml</protocol-file>
+
+	<request>
+		<pro>queryRead-onlyDeviceSwitch</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	<request>
+		<pro>readableDeviceState</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	<request>
+		<pro>writableDeviceState</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	<request>
+		<pro>read-onlyDeviceStatusAndAlarm</pro>
+		<response>
+			<field>1,1</field>
+			<value></value>
+			<head></head>
+			<tail></tail>
+			<class>byte</class>
+			<quote>
+				<field name="adr">1,1</field>
+			</quote>
+		</response>
+	</request>
+	
+</root>

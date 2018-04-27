@@ -4,4 +4,5 @@
 	<device file="config\device\combinedPower\parseCombinedPower.xml">组合电源监测模块</device>
 	<device file="config\device\LightningProtectionBox\LightningProtectionBox.xml">智能防雷箱</device>
 	<device file="config\device\23ACP-QTAirConditionController\23ACP-QTAirConditionController.xml">23ACP-QT机房空调控制器</device>
+	<device file="config\device\ACAP-RS485-EK400BSpiralChiller\ACAP-RS485-EK400BSpiralChiller.xml">螺杆式冷水机组</device>
 </root>
