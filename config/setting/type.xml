@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<type>
+		<name>aptotic</name>
+		<class>com.crscic.incube.data.typeparser.AptoticParser</class>
+		<parameters>
+			<param>com.crscic.incube.data.Part</param>
+		</parameters>
+	</type>
+
+	<type>
+		<name>file</name>
+		<class>com.crscic.incube.data.typeparser.FileParser</class>
+		<parameters>
+			<param>com.crscic.incube.data.Part</param>
+			<param>fileParamMap</param>
+		</parameters>
+	</type>
+
+	<type>
+		<name>length</name>
+		<class>com.crscic.incube.data.typeparser.SetPartMem</class>
+		<parameters>
+			<param>com.crscic.incube.data.Part</param>
+			<param>partMem</param>
+		</parameters>
+	</type>
+
+	<type>
+		<name>generate</name>
+		<class>com.crscic.incube.data.typeparser.GenerateParser</class>
+		<parameters>
+			<param>com.crscic.incube.data.Part</param>
+			<param>quoteMap</param>
+			<param>paramMap</param>
+			<param>fileParamMap</param>
+			<param>increaseParamMap</param>
+			<param>partMem</param>
+			<param>lastRandomByteMap</param>
+		</parameters>
+	</type>
+
+	<type>
+		<name>time</name>
+		<class>com.crscic.incube.data.typeparser.TimeParser</class>
+		<parameters>
+			<param>com.crscic.incube.data.Part</param>
+		</parameters>
+	</type>
+
+	<type>
+		<name>random</name>
+		<class>com.crscic.incube.data.typeparser.RandomParser</class>
+		<parameters>
+			<param>com.crscic.incube.data.Part</param>
+			<param>lastRandomByteMap</param>
+		</parameters>
+	</type>
+
+	<type>
+		<name>check</name>
+		<class>com.crscic.incube.data.typeparser.SetPartMem</class>
+		<parameters>
+			<param>com.crscic.incube.data.Part</param>
+			<param>partMem</param>
+		</parameters>
+	</type>
+
+	<type>
+		<name>increase</name>
+		<class>com.crscic.incube.data.typeparser.IncreaseParser</class>
+		<parameters>
+			<param>com.crscic.incube.data.Part</param>
+			<param>increaseParamMap</param>
+		</parameters>
+	</type>
+
+	<type>
+		<name>parameter</name>
+		<class>com.crscic.incube.data.typeparser.ParameterParser</class>
+		<parameters>
+			<param>com.crscic.incube.data.Part</param>
+			<param>paramMap</param>
+			<param>lastRandomByteMap</param>
+		</parameters>
+	</type>
+
+	<type>
+		<name>request</name>
+		<class>com.crscic.incube.data.typeparser.RequestParser</class>
+		<parameters>
+			<param>com.crscic.incube.data.Part</param>
+			<param>quoteMap</param>
+		</parameters>
+	</type>
+</root>
