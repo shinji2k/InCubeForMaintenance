@@ -5,13 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.crscic.incube.config.ParseSetting;
-import com.crscic.incube.config.Request;
-import com.crscic.incube.config.Response;
 import com.crscic.incube.connector.Connector;
 import com.crscic.incube.data.Data;
 import com.crscic.incube.data.ProtocolConfig;
+import com.crscic.incube.entity.ParseSetting;
 import com.crscic.incube.entity.Position;
+import com.crscic.incube.entity.Request;
+import com.crscic.incube.entity.Response;
+import com.crscic.incube.entity.Setting;
 import com.crscic.incube.exception.ConnectException;
 import com.crscic.incube.exception.GenerateDataException;
 import com.crscic.incube.log.Log;
@@ -27,7 +28,7 @@ public class Service
 {
 	public static boolean running = true;
 
-	public void startParseService(Connector connector, ParseSetting parseSetting, List<ProtocolConfig> parseProCfgList,
+	public void startParseService(Setting setting, Connector connector, ParseSetting parseSetting, List<ProtocolConfig> parseProCfgList,
 			int loopCnt)
 	{
 		if (!connector.isOpen())
@@ -41,7 +42,7 @@ public class Service
 				Log.error("打开连接失败", e);
 			}
 		}
-		Thread parseThread = new Thread(new ParseService(connector, parseSetting, parseProCfgList, loopCnt));
+		Thread parseThread = new Thread(new ParseService(setting, connector, parseSetting, parseProCfgList, loopCnt));
 		parseThread.start();
 	}
 
@@ -202,21 +203,23 @@ public class Service
 		private ParseSetting parseSetting;
 		private List<ProtocolConfig> proCfgList;
 		private int loopCnt;
+		private Setting setting;
 
 		public ParseService()
 		{
 		}
 
-		public ParseService(Connector connector, ParseSetting parseSetting, List<ProtocolConfig> proCfgList,
+		public ParseService(Setting setting, Connector connector, ParseSetting parseSetting, List<ProtocolConfig> proCfgList,
 				int loopCnt)
 		{
 			this.connector = connector;
 			this.parseSetting = parseSetting;
 			this.proCfgList = proCfgList;
 			this.loopCnt = loopCnt;
+			this.setting = setting;
 		}
 
-		public void startParseService(Connector connector, ParseSetting parseSetting, List<ProtocolConfig> proCfgList,
+		public void startParseService(Setting setting, Connector connector, ParseSetting parseSetting, List<ProtocolConfig> proCfgList,
 				int loopCnt)
 		{
 			try
@@ -264,7 +267,7 @@ public class Service
 			{
 				byte[] b;
 				// 按设备数量循环
-				Data sendData = new Data();
+				Data sendData = new Data(setting);
 				for (int i = 0; i < loopCnt; i++)
 				{
 					int loop = 0;
@@ -364,6 +367,18 @@ public class Service
 				}
 				Log.info("完成.");
 			}
+			catch (ClassNotFoundException e)
+			{
+				Log.error("未找到type对应的处理类", e);
+			}
+			catch (InstantiationException e)
+			{
+				Log.error("实例化type对应的处理类对象失败", e);
+			}
+			catch (IllegalAccessException e)
+			{
+				Log.error("请检查type对应的处理类可访问性", e);
+			}
 			catch (ConnectException e)
 			{
 				Log.error("连接错误", e);
@@ -392,7 +407,7 @@ public class Service
 		@Override
 		public void run()
 		{
-			startParseService(connector, parseSetting, proCfgList, loopCnt);
+			startParseService(setting, connector, parseSetting, proCfgList, loopCnt);
 		}
 
 	}

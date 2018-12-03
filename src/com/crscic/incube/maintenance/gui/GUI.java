@@ -1,6 +1,7 @@
 package com.crscic.incube.maintenance.gui;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 
@@ -21,9 +22,11 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.crscic.incube.DataFactory;
-import com.crscic.incube.config.ParseSetting;
 import com.crscic.incube.connector.Connector;
 import com.crscic.incube.data.ProtocolConfig;
+import com.crscic.incube.entity.ParseSetting;
+import com.crscic.incube.entity.Part;
+import com.crscic.incube.entity.Setting;
 import com.crscic.incube.exception.ParseXMLException;
 import com.crscic.incube.log.Log;
 import com.crscic.incube.maintenance.Service;
@@ -142,8 +145,8 @@ public final class GUI
 				int sentLoop = Integer.parseInt(sendLoopStr);
 				// 读取通信配置
 				DataFactory factory = new DataFactory("config\\config.xml");
-				
-				Map<String, Map<String, Map<String, String>>> connParamMapper = factory.getConnParam();
+				Setting setting = factory.initSetting();
+				Map<String, Map<String, Part>> connParamMapper = factory.getConnParam();
 				for (String connConf : connParamMapper.keySet())
 				{
 					Connector connector = factory.getConnector(connConf);
@@ -160,7 +163,7 @@ public final class GUI
 					if (parseSetting != null)
 					{
 						proCfgList = DataFactory.getDataConfig(parseSetting.getProtocolFile(), parseSetting.getRequest());
-						service.startParseService(connector, parseSetting, proCfgList, sentLoop);
+						service.startParseService(setting, connector, parseSetting, proCfgList, sentLoop);
 					}
 				}
 			}
@@ -171,6 +174,26 @@ public final class GUI
 			catch (ParseXMLException e1)
 			{
 				e1.printStackTrace();
+			}
+			catch (SecurityException e1)
+			{
+				Log.error("set方法作用域异常", e1);
+			}
+			catch (IllegalArgumentException e1)
+			{
+				Log.error("param.xml中属性类型与Part属性类型不匹配", e1);
+			}
+			catch (NoSuchMethodException e1)
+			{
+				Log.error("param.xml中属性找不到对应Part的set方法异常", e1);
+			}
+			catch (IllegalAccessException e1)
+			{
+				Log.error("param.xml中属性对应Part的set方法参数传递异常", e1);
+			}
+			catch (InvocationTargetException e1)
+			{
+				Log.error("param.xml中节点对应Part对象实例化异常", e1);
 			}
 		}
 	}
